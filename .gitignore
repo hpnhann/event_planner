@@ -1,0 +1,15 @@
+# Bỏ qua tất cả các thư mục uploads
+adminUploads/
+notesUploads/
+noticeUploads/
+syllabusUploads/
+
+# Bỏ qua thư viện bên thứ 3
+phpmailer/
+
+# Bỏ qua screenshots
+screenshots/
+
+# Bỏ qua các file cấu hình nhạy cảm (nếu có)
+# config.php
+# .env
