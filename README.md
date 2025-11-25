@@ -144,3 +144,217 @@ Please make sure to update tests as appropriate.
 
 
 
+-------------------------------------------------------------------------
+# HƯỚNG DẪN SỬ DỤNG MEMBERS MANAGEMENT SYSTEM
+
+## 📋 MÔ TẢ
+
+Hệ thống quản lý thông tin thành viên (members) cho Admin Panel.
+- ✅ **Add Member**: Admin thêm thông tin cá nhân của member (KHÔNG tạo account đăng nhập)
+- ✅ **Edit Member**: Sửa thông tin cá nhân
+- ✅ **Delete Member**: Xóa member khỏi hệ thống
+- ✅ **View Member**: Xem chi tiết thông tin member
+
+## 📁 CẤU TRÚC FILE
+
+```
+admin_panel/
+├── members.php              → Trang UI quản lý members
+├── members_handler.php      → Backend xử lý CRUD operations
+└── ...
+
+database/
+└── create_members_table.sql → SQL script tạo bảng members
+```
+
+## 🚀 CÁCH CÀI ĐẶT
+
+### Bước 1: Tạo Database Table
+
+1. Mở phpMyAdmin hoặc MySQL client
+2. Chạy file `create_members_table.sql` để tạo bảng `members`
+3. Bảng sẽ có cấu trúc:
+   - `id` - Primary key
+   - `student_id` - Mã số sinh viên (unique)
+   - `full_name` - Họ tên đầy đủ
+   - `phone` - Số điện thoại
+   - `email` - Email (unique)
+   - `created_at` - Ngày tạo
+   - `updated_at` - Ngày cập nhật
+
+### Bước 2: Upload Files
+
+1. Copy `members.php` vào thư mục `admin_panel/`
+2. Copy `members_handler.php` vào thư mục `admin_panel/`
+
+### Bước 3: Kiểm tra Kết nối Database
+
+Đảm bảo file `../assets/config.php` có kết nối database đúng:
+
+```php
+<?php
+$servername = "localhost";
+$username = "your_username";
+$password = "your_password";
+$dbname = "your_database";
+
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+?>
+```
+
+## 🎯 CÁCH SỬ DỤNG
+
+### 1. Truy cập trang Members Management
+
+URL: `http://your-domain/admin_panel/members.php`
+
+Yêu cầu: Phải đăng nhập với role = 'admin'
+
+### 2. Add Member (Thêm thành viên)
+
+1. Click nút **"Add Member"**
+2. Điền thông tin:
+   - Student ID (bắt buộc, unique)
+   - Full Name (bắt buộc)
+   - Phone (bắt buộc)
+   - Email (bắt buộc, unique)
+3. Click **"Save Member Info"**
+
+**Lưu ý:** 
+- Chức năng này CHỈ lưu thông tin cá nhân
+- KHÔNG tạo account để member đăng nhập
+- Member chưa thể login vào hệ thống
+
+### 3. Edit Member (Sửa thông tin)
+
+1. Click nút **"Edit"** ở member muốn sửa
+2. Chỉnh sửa thông tin
+3. Click **"Update Member"**
+
+### 4. Delete Member (Xóa thành viên)
+
+1. Click nút **"Delete"** 
+2. Xác nhận xóa
+3. Member sẽ bị xóa khỏi database
+
+### 5. View Member (Xem chi tiết)
+
+1. Click nút **"View"** 
+2. Popup hiện thông tin đầy đủ của member
+
+### 6. Search (Tìm kiếm)
+
+Gõ vào ô search để tìm theo:
+- Student ID
+- Full Name
+- Phone
+- Email
+
+## 🔄 FLOW HOẠT ĐỘNG
+
+### Flow hiện tại (Members Management):
+```
+Admin Login → Dashboard → Members Page → Add Member → Lưu thông tin cá nhân
+                                       → Edit Member
+                                       → Delete Member
+                                       → View Member
+```
+
+### Nếu muốn cho Members đăng nhập sau này:
+
+**Option 1: Admin tạo account cho member**
+```
+Admin → Add Member (lưu thông tin)
+     → Add Account (tạo user account với role='student')
+     → Link member_id với user_id
+```
+
+**Option 2: Member tự đăng ký**
+```
+Member → Trang Register 
+       → Điền thông tin (Student ID, Full Name, Phone, Email, Password)
+       → Hệ thống tạo account trong bảng users
+       → Member có thể login
+```
+
+## 📊 DATABASE STRUCTURE
+
+### Bảng `members` (Thông tin cá nhân)
+```sql
+CREATE TABLE members (
+  id INT PRIMARY KEY,
+  student_id VARCHAR(50) UNIQUE,
+  full_name VARCHAR(255),
+  phone VARCHAR(20),
+  email VARCHAR(255) UNIQUE,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+);
+```
+
+### Bảng `users` (Account đăng nhập) - Đã có sẵn
+```sql
+CREATE TABLE users (
+  id INT PRIMARY KEY,
+  email VARCHAR(255),
+  password_hash VARCHAR(255),
+  role ENUM('admin', 'teacher', 'student')
+);
+```
+
+## ⚠️ LƯU Ý QUAN TRỌNG
+
+### 1. Phân biệt Members vs Users
+
+| Bảng | Mục đích | Có password? | Có thể login? |
+|------|----------|--------------|---------------|
+| `members` | Lưu thông tin cá nhân | ❌ Không | ❌ Không |
+| `users` | Account đăng nhập | ✅ Có | ✅ Có |
+
+### 2. Khác biệt so với code cũ
+
+**Code cũ (SAI):**
+- Add Member = Tạo account trong bảng `users` 
+- Member có thể login ngay
+- Nhưng thiếu thông tin cá nhân (Student ID, Full Name, Phone)
+
+**Code mới (ĐÚNG):**
+- Add Member = Lưu thông tin cá nhân vào bảng `members`
+- Member CHƯA có account để login
+- Đầy đủ thông tin: Student ID, Full Name, Phone, Email
+
+### 3. Khi nào cần tạo bảng users cho members?
+
+Nếu muốn members có thể login:
+- Tạo flow Register riêng
+- Hoặc admin tạo account trong phần khác
+- Link `member_id` với `user_id`
+
+## 🐛 TROUBLESHOOTING
+
+### Lỗi: Table 'members' doesn't exist
+**Giải pháp:** Chạy file `create_members_table.sql`
+
+### Lỗi: Duplicate entry for 'student_id'
+**Giải pháp:** Student ID đã tồn tại, sử dụng Student ID khác
+
+### Lỗi: Duplicate entry for 'email'
+**Giải pháp:** Email đã tồn tại, sử dụng email khác
+
+### Không thấy nút "Add Member"
+**Giải pháp:** 
+- Kiểm tra đã login với role='admin' chưa
+- Kiểm tra session có đúng không
+
+## 📧 CONTACT
+
+Nếu có vấn đề, hãy kiểm tra:
+1. Database connection trong `config.php`
+2. Session đã start chưa
+3. Role có phải 'admin' không
+4. Bảng `members` đã tạo chưa
+
+---
+**Version:** 1.0  
+**Last Updated:** 2024  
+**Author:** School Management System Team

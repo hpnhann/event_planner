@@ -117,7 +117,7 @@ if ($isLoggedIn) {
                             <li><a href="admin_panel/dashboard.php">Dashboard</a></li>
                             <li><a href="admin_panel/members.php">Members</a></li>
                             <li><a href="admin_panel/organisers.php">Organisers</a></li>
-                            <li><a href="admin_panel/classes.php">Classes</a></li>
+                            <li><a href="admin_panel/events.php">Events</a></li>
                         </ul>
                     </li>
                     <?php elseif ($userRole === 'owner'): ?>
