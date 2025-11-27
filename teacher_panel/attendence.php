@@ -1,6 +1,6 @@
 <?php include('partials/_header.php') ?>
 
-
+// Organizer Dashboard Module - Updated 27/11
 
 <!-- Sidebar -->
 <?php include('partials/_sidebar.php') ?>
