@@ -37,8 +37,8 @@ if (isset($_SESSION['uid'])) {
       <div class="front">
         <img src="images/loginimage.jpg" alt="">
         <div class="text">
-          <span class="text-1">SCHOOL MANAGEMENT SYSTEM<br></span>
-          <span class="text-2">Plan serve program</span>
+          <span class="text-1">EVENT PLANNER SYSTEM<br></span>
+          <span class="text-2">Manage your events easily</span>
         </div>
       </div>
     </div>
@@ -48,6 +48,16 @@ if (isset($_SESSION['uid'])) {
         <div class="login-form">
 
           <div class="title" id='board-title'>Login</div>
+
+          <?php if(isset($_SESSION['success_msg'])): ?>
+              <div class="alert alert-success text-center mt-3" role="alert" style="display: block !important;">
+                  <i class="fas fa-check-circle"></i>
+                  <?php 
+                  echo $_SESSION['success_msg']; 
+                  unset($_SESSION['success_msg']);
+                  ?>
+              </div>
+          <?php endif; ?>
 
           <div class="alert-box">
             <div class="alert alert-danger text-center mt-3" role="alert" id="error-msg"></div>
@@ -66,7 +76,11 @@ if (isset($_SESSION['uid'])) {
               </div>
               <div class="text"><a id="forgotpassword">Forgot password?</a></div>
               <div class="button input-box">
-                <button type="submit" class="btn">Submit</button>
+                <button type="submit" class="btn-login">Submit</button>
+              </div>
+              <div class="text" style="text-align: center; margin-top: 20px; font-size: 15px;">
+              Don't have an account? 
+              <a href="register.php" style="color: #7d2ae8; font-weight: 600; text-decoration: none;">Register Now</a>
               </div>
             </div>
           </form>

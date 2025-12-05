@@ -1,4 +1,4 @@
-<?php
+<!-- <?php
 error_reporting(0);
 session_start();
 
@@ -214,7 +214,7 @@ if (isset($_SESSION['uid'])) {
 
       const formData = new FormData(this);
 
-      fetch('register_handler.php', {
+      fetch('auth_register.php', {
         method: 'POST',
         body: formData
       })
@@ -246,5 +246,226 @@ if (isset($_SESSION['uid'])) {
       });
     });
   </script>
+</body>
+</html> -->
+
+
+<?php
+session_start();
+if (isset($_SESSION['uid'])) {
+    header('Location: index.php');
+    exit();
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Account</title>
+    
+    <!-- 1. Tích hợp Tailwind CSS (Để chạy được style trong code React của bạn) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Font Awesome (Thay thế cho Lucide Icons trong React) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Hiệu ứng loading quay quay */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none; /* Mặc định ẩn */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Container chính (Card màu trắng) -->
+    <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+        
+        <!-- Tiêu đề -->
+        <h1 class="text-3xl font-bold text-center mb-2">Let's Register</h1>
+        <h1 class="text-3xl font-bold text-center mb-8">Account</h1>
+        
+        <!-- Thông báo lỗi/thành công (Thêm vào để hiển thị) -->
+        <div id="alert-msg" class="hidden mb-4 p-3 rounded text-sm text-center"></div>
+
+        <!-- Form -->
+        <form id="registerForm" class="space-y-4">
+            
+            <!-- Student ID -->
+            <input
+                type="text"
+                name="student_id"
+                placeholder="Student ID / Member ID"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            
+            <!-- Full Name -->
+            <input
+                type="text"
+                name="full_name"
+                placeholder="Full Name"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            
+            <!-- Phone -->
+            <input
+                type="tel"
+                name="phone"
+                placeholder="Phone"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            
+            <!-- Email -->
+            <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            
+            <!-- Password & Eye Icon -->
+            <div class="relative">
+                <input
+                    type="password"
+                    name="password"
+                    id="passwordInput"
+                    placeholder="Password"
+                    required
+                    minlength="6"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                    type="button"
+                    id="togglePassword"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                    <!-- Mặc định là icon mắt mở -->
+                    <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                </button>
+            </div>
+            
+            <!-- Nút Đăng ký -->
+            <button
+                type="submit"
+                id="submitBtn"
+                class="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition flex justify-center items-center gap-2"
+            >
+                <span>Sign Up</span> <!-- Chỉnh lại text nút cho đúng nghĩa -->
+                <div class="spinner" id="loadingSpinner"></div>
+            </button>
+            
+            <!-- Link quay lại Login -->
+            <div class="text-center text-sm">
+                Already have an account ? 
+                <a href="login.php" class="text-black font-semibold ml-1 hover:underline">
+                    Login
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Script xử lý Logic -->
+    <script>
+        // 1. Xử lý ẩn/hiện mật khẩu
+        const toggleBtn = document.getElementById('togglePassword');
+        const passInput = document.getElementById('passwordInput');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        toggleBtn.addEventListener('click', () => {
+            const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passInput.setAttribute('type', type);
+            
+            // Đổi icon
+            if (type === 'text') {
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        });
+
+        // 2. Xử lý Submit Form bằng Fetch API (AJAX)
+        const form = document.getElementById('registerForm');
+        const alertMsg = document.getElementById('alert-msg');
+        const submitBtn = document.getElementById('submitBtn');
+        const spinner = document.getElementById('loadingSpinner');
+        const btnText = submitBtn.querySelector('span');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Hiệu ứng Loading
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            spinner.style.display = 'block';
+            btnText.textContent = 'Processing...';
+            alertMsg.classList.add('hidden');
+
+            const formData = new FormData(form);
+
+            try {
+                // Gọi đến file Backend auth_register.php mà chúng ta đã tạo trước đó
+                const response = await fetch('auth_register.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                // Hiển thị thông báo
+                alertMsg.classList.remove('hidden');
+                
+                if (data.status === 'success') {
+                    // Thành công: Màu xanh
+                    alertMsg.className = 'mb-4 p-3 rounded text-sm text-center bg-green-100 text-green-700 border border-green-200';
+                    alertMsg.textContent = data.message;
+                    
+                    form.reset();
+                    
+                    // Chuyển hướng sau 1.5s
+                    setTimeout(() => {
+                        window.location.href = 'login.php';
+                    }, 1500);
+                } else {
+                    // Thất bại: Màu đỏ
+                    alertMsg.className = 'mb-4 p-3 rounded text-sm text-center bg-red-100 text-red-700 border border-red-200';
+                    alertMsg.textContent = data.message;
+                    
+                    // Reset nút bấm
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    spinner.style.display = 'none';
+                    btnText.textContent = 'Sign Up';
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alertMsg.classList.remove('hidden');
+                alertMsg.className = 'mb-4 p-3 rounded text-sm text-center bg-red-100 text-red-700 border border-red-200';
+                alertMsg.textContent = 'Lỗi kết nối server!';
+                
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                spinner.style.display = 'none';
+                btnText.textContent = 'Sign Up';
+            }
+        });
+    </script>
 </body>
 </html>
