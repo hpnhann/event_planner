@@ -102,9 +102,12 @@
                         </div>
                     </div>
                 <?php else: ?>
-                    <a href="login.php" style="color: #fff; padding: 0 20px; text-decoration: none; line-height: 46px;">
-                        <i class="ti-user"></i> Login
-                    </a>
+                <a href="login.php" style="color: #fff; padding: 0 10px; text-decoration: none; line-height: 46px;">
+                    <i class="ti-user"></i> Login
+                </a>
+                <a href="register.php" style="color: #fff; padding: 0 10px; text-decoration: none; line-height: 46px; background: #009688; border-radius: 4px;">
+                    <i class="ti-write"></i> Register
+                </a>
                 <?php endif; ?>
                 
                 <div class="search-btn">

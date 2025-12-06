@@ -56,17 +56,24 @@ header('Content-Type: application/json');
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 $response = array();
 
-// ADD MEMBER (chỉ thêm thông tin, không tạo account)
+// ADD MEMBER với đầy đủ fields
 if ($action === 'add') {
     $student_id = mysqli_real_escape_string($conn, trim($_POST['student_id']));
     $full_name = mysqli_real_escape_string($conn, trim($_POST['full_name']));
-    $phone = mysqli_real_escape_string($conn, trim($_POST['phone']));
+    $position = mysqli_real_escape_string($conn, trim($_POST['position'] ?? ''));
+    $department = mysqli_real_escape_string($conn, trim($_POST['department'] ?? ''));
     $email = mysqli_real_escape_string($conn, trim($_POST['email']));
+    $phone = mysqli_real_escape_string($conn, trim($_POST['phone']));
+    $birthday = mysqli_real_escape_string($conn, trim($_POST['birthday'] ?? ''));
+    $faculty = mysqli_real_escape_string($conn, trim($_POST['faculty'] ?? ''));
+    $academic_year = mysqli_real_escape_string($conn, trim($_POST['academic_year'] ?? ''));
+    $class_name = mysqli_real_escape_string($conn, trim($_POST['class_name'] ?? ''));
+    $status = mysqli_real_escape_string($conn, trim($_POST['status'] ?? 'active'));
 
-    // Validate input
+    // Validate required fields
     if (empty($student_id) || empty($full_name) || empty($phone) || empty($email)) {
         $response['status'] = 'error';
-        $response['message'] = 'All fields are required!';
+        $response['message'] = 'Student ID, Full Name, Phone, and Email are required!';
         echo json_encode($response);
         exit();
     }
@@ -99,14 +106,17 @@ if ($action === 'add') {
         } else {
             mysqli_stmt_close($checkEmailStmt);
             
-            // Insert new member (chỉ thông tin, không có password)
-            $insertQuery = "INSERT INTO members (student_id, full_name, phone, email, created_at) VALUES (?, ?, ?, ?, NOW())";
+            // Insert new member với tất cả fields
+            $insertQuery = "INSERT INTO members (student_id, full_name, position, department, email, phone, birthday, faculty, academic_year, class_name, status, created_at) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
             $insertStmt = mysqli_prepare($conn, $insertQuery);
-            mysqli_stmt_bind_param($insertStmt, "ssss", $student_id, $full_name, $phone, $email);
+            mysqli_stmt_bind_param($insertStmt, "sssssssssss", 
+                $student_id, $full_name, $position, $department, $email, $phone, 
+                $birthday, $faculty, $academic_year, $class_name, $status);
             
             if (mysqli_stmt_execute($insertStmt)) {
                 $response['status'] = 'success';
-                $response['message'] = 'Member information added successfully!';
+                $response['message'] = 'Member added successfully!';
             } else {
                 $response['status'] = 'error';
                 $response['message'] = 'Failed to add member: ' . mysqli_error($conn);
@@ -116,18 +126,25 @@ if ($action === 'add') {
     }
 }
 
-// EDIT MEMBER
+// EDIT MEMBER với đầy đủ fields
 elseif ($action === 'edit') {
     $id = intval($_POST['id']);
     $student_id = mysqli_real_escape_string($conn, trim($_POST['student_id']));
     $full_name = mysqli_real_escape_string($conn, trim($_POST['full_name']));
-    $phone = mysqli_real_escape_string($conn, trim($_POST['phone']));
+    $position = mysqli_real_escape_string($conn, trim($_POST['position'] ?? ''));
+    $department = mysqli_real_escape_string($conn, trim($_POST['department'] ?? ''));
     $email = mysqli_real_escape_string($conn, trim($_POST['email']));
+    $phone = mysqli_real_escape_string($conn, trim($_POST['phone']));
+    $birthday = mysqli_real_escape_string($conn, trim($_POST['birthday'] ?? ''));
+    $faculty = mysqli_real_escape_string($conn, trim($_POST['faculty'] ?? ''));
+    $academic_year = mysqli_real_escape_string($conn, trim($_POST['academic_year'] ?? ''));
+    $class_name = mysqli_real_escape_string($conn, trim($_POST['class_name'] ?? ''));
+    $status = mysqli_real_escape_string($conn, trim($_POST['status'] ?? 'active'));
 
-    // Validate input
+    // Validate required fields
     if (empty($student_id) || empty($full_name) || empty($phone) || empty($email)) {
         $response['status'] = 'error';
-        $response['message'] = 'All fields are required!';
+        $response['message'] = 'Student ID, Full Name, Phone, and Email are required!';
         echo json_encode($response);
         exit();
     }
@@ -160,14 +177,17 @@ elseif ($action === 'edit') {
         } else {
             mysqli_stmt_close($checkEmailStmt);
             
-            // Update member information
-            $updateQuery = "UPDATE members SET student_id=?, full_name=?, phone=?, email=? WHERE id=?";
+            // Update member với tất cả fields
+            $updateQuery = "UPDATE members SET student_id=?, full_name=?, position=?, department=?, email=?, phone=?, 
+                           birthday=?, faculty=?, academic_year=?, class_name=?, status=? WHERE id=?";
             $updateStmt = mysqli_prepare($conn, $updateQuery);
-            mysqli_stmt_bind_param($updateStmt, "ssssi", $student_id, $full_name, $phone, $email, $id);
+            mysqli_stmt_bind_param($updateStmt, "sssssssssssi", 
+                $student_id, $full_name, $position, $department, $email, $phone, 
+                $birthday, $faculty, $academic_year, $class_name, $status, $id);
             
             if (mysqli_stmt_execute($updateStmt)) {
                 $response['status'] = 'success';
-                $response['message'] = 'Member information updated successfully!';
+                $response['message'] = 'Member updated successfully!';
             } else {
                 $response['status'] = 'error';
                 $response['message'] = 'Failed to update member: ' . mysqli_error($conn);
