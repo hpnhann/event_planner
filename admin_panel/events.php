@@ -2,13 +2,11 @@
 error_reporting(0);
 session_start();
 
-// Kiểm tra đã login chưa
 if (!isset($_SESSION['uid'])) {
     header('Location: ../login.php');
     exit();
 }
 
-// Kiểm tra role có phải admin không
 include('../assets/config.php');
 $uid = $_SESSION['uid'];
 
@@ -27,30 +25,22 @@ if (!$row || $row['role'] !== 'admin') {
 
 $userName = $row['email'];
 
-// Lấy tất cả events của admin (cả draft và published)
+// Get events with stats
 $eventsQuery = "SELECT e.*, 
-                COUNT(DISTINCT r.id) as registered_count 
+                COUNT(DISTINCT r.id) as registered_count,
+                u.email as organizer_name
                 FROM events e 
                 LEFT JOIN event_registrations r ON e.id = r.event_id AND r.status != 'cancelled'
-                WHERE e.created_by = ?
+                LEFT JOIN users u ON e.created_by = u.id
                 GROUP BY e.id 
                 ORDER BY e.created_at DESC";
-$stmt = mysqli_prepare($conn, $eventsQuery);
-mysqli_stmt_bind_param($stmt, "i", $uid);
-mysqli_stmt_execute($stmt);
-$eventsResult = mysqli_stmt_get_result($stmt);
+$eventsResult = mysqli_query($conn, $eventsQuery);
 
-// Count statistics
-$statsQuery = "SELECT 
-               COUNT(*) as total_events,
-               SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END) as draft_count,
-               SUM(CASE WHEN status='published' THEN 1 ELSE 0 END) as published_count
-               FROM events WHERE created_by = ?";
-$stmt = mysqli_prepare($conn, $statsQuery);
-mysqli_stmt_bind_param($stmt, "i", $uid);
-mysqli_stmt_execute($stmt);
-$statsResult = mysqli_stmt_get_result($stmt);
-$stats = mysqli_fetch_assoc($statsResult);
+// Stats
+$totalEvents = mysqli_num_rows($eventsResult);
+$publishedQuery = "SELECT COUNT(*) as count FROM events WHERE status='published'";
+$publishedCount = mysqli_fetch_assoc(mysqli_query($conn, $publishedQuery))['count'];
+$draftCount = $totalEvents - $publishedCount;
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -77,78 +67,97 @@ $stats = mysqli_fetch_assoc($statsResult);
             color: white;
         }
         .container-main {
-            max-width: 1400px;
+            max-width: 1800px;
             margin: 2rem auto;
             padding: 2rem;
-        }
-        .stats-card {
             background: white;
             border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .stat-item {
-            text-align: center;
-            padding: 1rem;
-        }
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #667eea;
-        }
-        .stat-label {
-            color: #6c757d;
-            font-size: 0.9rem;
         }
         .page-header {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e0e0e0;
         }
-        .btn-add {
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .stats-item {
+            text-align: center;
+        }
+        .stats-item h3 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .stats-item p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .btn-create {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            font-weight: bold;
         }
-        .btn-add:hover {
+        .btn-create:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
             color: white;
         }
-        .events-table {
+        .event-card {
             background: white;
+            border: 1px solid #e0e0e0;
             border-radius: 10px;
             padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
         }
-        .table thead {
+        .event-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+        }
+        .event-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .event-placeholder {
+            width: 100px;
+            height: 100px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-        }
-        .badge-draft {
-            background-color: #6c757d;
         }
         .badge-published {
             background-color: #28a745;
+            padding: 0.5rem 1rem;
         }
-        .event-image-thumb {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 5px;
+        .badge-draft {
+            background-color: #ffc107;
+            color: #333;
+            padding: 0.5rem 1rem;
         }
-        .btn-action {
-            padding: 0.25rem 0.5rem;
-            margin: 0 0.125rem;
-            font-size: 0.875rem;
+        .badge-volunteers {
+            background-color: #17a2b8;
+            padding: 0.5rem 1rem;
+        }
+        .action-buttons .btn {
+            margin: 0.25rem;
         }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <a class="navbar-brand" href="dashboard.php">
@@ -161,168 +170,316 @@ $stats = mysqli_fetch_assoc($statsResult);
     </nav>
 
     <div class="container-main">
-        <!-- Statistics -->
-        <div class="stats-card">
-            <div class="row">
-                <div class="col-md-4 stat-item">
-                    <div class="stat-number"><?php echo $stats['total_events']; ?></div>
-                    <div class="stat-label">Total Events</div>
-                </div>
-                <div class="col-md-4 stat-item">
-                    <div class="stat-number text-success"><?php echo $stats['published_count']; ?></div>
-                    <div class="stat-label">Published Events</div>
-                </div>
-                <div class="col-md-4 stat-item">
-                    <div class="stat-number text-secondary"><?php echo $stats['draft_count']; ?></div>
-                    <div class="stat-label">Draft Events</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Page Header -->
         <div class="page-header">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2><i class="fas fa-calendar-alt"></i> Events Management</h2>
-                    <p class="text-muted mb-0">Quản lý các sự kiện tình nguyện</p>
+                    <p class="text-muted mb-0">Quản lý các hoạt động và sự kiện tình nguyện</p>
                 </div>
                 <div>
                     <a href="dashboard.php" class="btn btn-secondary me-2">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
-                    <a href="event_create.php" class="btn btn-add">
+                    <button class="btn btn-create" data-bs-toggle="modal" data-bs-target="#createEventModal">
                         <i class="fas fa-plus"></i> Create New Event
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Events Table -->
-        <div class="events-table">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Event</th>
-                            <th>Date & Time</th>
-                            <th>Location</th>
-                            <th>Volunteers</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (mysqli_num_rows($eventsResult) > 0): ?>
-                            <?php while ($event = mysqli_fetch_assoc($eventsResult)): ?>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <?php if ($event['event_image']): ?>
-                                                <img src="../uploads/events/<?php echo htmlspecialchars($event['event_image']); ?>" 
-                                                     class="event-image-thumb me-2" alt="Event">
-                                            <?php else: ?>
-                                                <div class="event-image-thumb me-2 bg-light d-flex align-items-center justify-content-center">
-                                                    <i class="fas fa-calendar-day text-muted"></i>
-                                                </div>
-                                            <?php endif; ?>
-                                            <div>
-                                                <strong><?php echo htmlspecialchars($event['event_title']); ?></strong>
-                                                <br>
-                                                <small class="text-muted">
-                                                    Created: <?php echo date('M d, Y', strtotime($event['created_at'])); ?>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <i class="fas fa-calendar text-primary"></i> 
-                                        <?php echo date('M d, Y', strtotime($event['event_date'])); ?>
-                                        <br>
-                                        <i class="fas fa-clock text-warning"></i> 
-                                        <?php echo date('h:i A', strtotime($event['event_time'])); ?>
-                                    </td>
-                                    <td>
-                                        <i class="fas fa-map-marker-alt text-danger"></i>
-                                        <?php echo htmlspecialchars($event['event_location']); ?>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">
-                                            <?php echo $event['registered_count']; ?> / <?php echo $event['max_volunteers']; ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <?php if ($event['status'] == 'draft'): ?>
-                                            <span class="badge badge-draft">
-                                                <i class="fas fa-file-alt"></i> Draft
-                                            </span>
-                                        <?php else: ?>
-                                            <span class="badge badge-published">
-                                                <i class="fas fa-check-circle"></i> Published
-                                            </span>
-                                            <br>
-                                            <small class="text-muted">
-                                                <?php echo date('M d', strtotime($event['published_at'])); ?>
-                                            </small>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group-vertical" role="group">
-                                            <a href="event_edit.php?id=<?php echo $event['id']; ?>" 
-                                               class="btn btn-warning btn-action">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                            
-                                            <?php if ($event['status'] == 'draft'): ?>
-                                                <button onclick="publishEvent(<?php echo $event['id']; ?>)" 
-                                                        class="btn btn-success btn-action">
-                                                    <i class="fas fa-paper-plane"></i> Publish
-                                                </button>
-                                            <?php else: ?>
-                                                <button onclick="unpublishEvent(<?php echo $event['id']; ?>)" 
-                                                        class="btn btn-secondary btn-action">
-                                                    <i class="fas fa-eye-slash"></i> Unpublish
-                                                </button>
-                                            <?php endif; ?>
-                                            
-                                            <a href="event_registrations.php?id=<?php echo $event['id']; ?>" 
-                                               class="btn btn-info btn-action">
-                                                <i class="fas fa-users"></i> Registrations
-                                            </a>
-                                            
-                                            <button onclick="deleteEvent(<?php echo $event['id']; ?>, '<?php echo htmlspecialchars($event['event_title']); ?>')" 
-                                                    class="btn btn-danger btn-action">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="6" class="text-center py-5">
-                                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted">No events created yet</p>
-                                    <a href="event_create.php" class="btn btn-primary">
-                                        <i class="fas fa-plus"></i> Create Your First Event
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+        <!-- Stats -->
+        <div class="stats-card">
+            <div class="row">
+                <div class="col-md-4 stats-item">
+                    <h3><?php echo $totalEvents; ?></h3>
+                    <p>Total Events</p>
+                </div>
+                <div class="col-md-4 stats-item">
+                    <h3><?php echo $publishedCount; ?></h3>
+                    <p>Published Events</p>
+                </div>
+                <div class="col-md-4 stats-item">
+                    <h3><?php echo $draftCount; ?></h3>
+                    <p>Draft Events</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="mb-3">
+            <input type="text" id="searchInput" class="form-control" 
+                   placeholder="🔍 Tìm kiếm theo tên sự kiện, địa điểm...">
+        </div>
+
+        <!-- Events List -->
+        <div id="eventsList">
+            <?php if (mysqli_num_rows($eventsResult) > 0): ?>
+                <?php while ($event = mysqli_fetch_assoc($eventsResult)): ?>
+                    <?php 
+                    $spots_left = $event['max_volunteers'] - $event['registered_count'];
+                    $is_full = $spots_left <= 0;
+                    ?>
+                    <div class="event-card" data-search="<?php echo strtolower($event['event_title'] . ' ' . $event['event_location']); ?>">
+                        <div class="row align-items-center">
+                            <div class="col-md-1">
+                                <?php if ($event['event_image']): ?>
+                                    <img src="../uploads/events/<?php echo htmlspecialchars($event['event_image']); ?>" 
+                                         class="event-image" alt="Event">
+                                <?php else: ?>
+                                    <div class="event-placeholder">
+                                        <i class="fas fa-calendar-day fa-2x"></i>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="col-md-3">
+                                <h5 class="mb-1"><?php echo htmlspecialchars($event['event_title']); ?></h5>
+                                <small class="text-muted">Created: <?php echo date('M d, Y', strtotime($event['created_at'])); ?></small>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-1">
+                                    <i class="fas fa-calendar text-primary"></i>
+                                    <?php echo date('M d, Y', strtotime($event['event_date'])); ?>
+                                </div>
+                                <div>
+                                    <i class="fas fa-clock text-warning"></i>
+                                    <?php echo date('g:i A', strtotime($event['event_time'])); ?>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                <?php echo htmlspecialchars($event['event_location']); ?>
+                            </div>
+                            <div class="col-md-1">
+                                <span class="badge badge-volunteers">
+                                    <?php echo $event['registered_count']; ?>/<?php echo $event['max_volunteers']; ?>
+                                </span>
+                            </div>
+                            <div class="col-md-1">
+                                <span class="badge <?php echo $event['status'] === 'published' ? 'badge-published' : 'badge-draft'; ?>">
+                                    <?php echo ucfirst($event['status']); ?>
+                                </span>
+                            </div>
+                            <div class="col-md-2 action-buttons text-end">
+                                <button class="btn btn-sm btn-primary" onclick="viewEvent(<?php echo $event['id']; ?>)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick='editEvent(<?php echo json_encode($event); ?>)'>
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-info" onclick="viewRegistrations(<?php echo $event['id']; ?>)">
+                                    <i class="fas fa-users"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteEvent(<?php echo $event['id']; ?>, '<?php echo addslashes($event['event_title']); ?>')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-5x text-muted mb-3"></i>
+                    <h4>No Events Yet</h4>
+                    <p class="text-muted">Create your first event to get started!</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Modal Create/Edit Event -->
+    <div class="modal fade" id="createEventModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalTitle">
+                        <i class="fas fa-plus-circle"></i> Create New Event
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="eventForm" enctype="multipart/form-data">
+                    <input type="hidden" name="event_id" id="eventId">
+                    <input type="hidden" name="action" id="formAction" value="create">
+                    
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Activity Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="activity_code" id="activityCode" 
+                                       placeholder="000001" required>
+                                <small class="text-muted">Format: 6 digits, auto increment</small>
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="title" id="title" 
+                                       maxlength="255" required placeholder="Beach Cleanup Drive">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control" name="description" id="description" 
+                                      rows="4" maxlength="5000" required 
+                                      placeholder="Describe the event..."></textarea>
+                            <small class="text-muted">Max 5000 characters</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Start Date <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" name="start_date" 
+                                       id="startDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Date <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" name="end_date" 
+                                       id="endDate" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Location <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="location" id="location" 
+                                   maxlength="255" required placeholder="Sunset Beach">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Maximum Volunteer <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="max_volunteers" 
+                                       id="maxVolunteers" required min="1" placeholder="50">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Cost</label>
+                                <input type="number" class="form-control" name="cost" id="cost" 
+                                       min="0" step="0.01" placeholder="0.00">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Benefits</label>
+                                <input type="text" class="form-control" name="benefits" id="benefits" 
+                                       maxlength="255" placeholder="Certificate, Free lunch">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Image</label>
+                                <input type="file" class="form-control" name="image" id="image" 
+                                       accept="image/*">
+                                <div id="currentImage" class="mt-2"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Close Registration At</label>
+                                <input type="datetime-local" class="form-control" name="close_registration" 
+                                       id="closeRegistration">
+                                <small class="text-muted">Hệ thống tự động đóng đăng ký khi đến thời gian</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-control" name="status" id="status" required>
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> <span id="submitBtnText">Create Event</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Publish Event
-        function publishEvent(eventId) {
-            if (confirm('Publish this event? It will be visible to all volunteers and they can start registering.')) {
-                fetch('event_handler.php', {
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const eventCards = document.querySelectorAll('.event-card');
+            
+            eventCards.forEach(card => {
+                const searchText = card.getAttribute('data-search');
+                card.style.display = searchText.includes(searchValue) ? '' : 'none';
+            });
+        });
+
+        // Auto-generate activity code
+        document.querySelector('[data-bs-target="#createEventModal"]').addEventListener('click', function() {
+            if (document.getElementById('formAction').value === 'create') {
+                fetch('events_handler.php?action=get_next_code')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code) {
+                            document.getElementById('activityCode').value = data.code;
+                        }
+                    });
+            }
+        });
+
+        // Form submit
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('events_handler.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ An error occurred!');
+            });
+        });
+
+        function editEvent(eventData) {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Event';
+            document.getElementById('submitBtnText').textContent = 'Update Event';
+            document.getElementById('formAction').value = 'edit';
+            document.getElementById('eventId').value = eventData.id;
+            document.getElementById('activityCode').value = eventData.activity_code || '';
+            document.getElementById('title').value = eventData.event_title;
+            document.getElementById('description').value = eventData.event_description;
+            document.getElementById('startDate').value = eventData.event_date + 'T' + eventData.event_time;
+            document.getElementById('endDate').value = eventData.event_end_date || '';
+            document.getElementById('location').value = eventData.event_location;
+            document.getElementById('maxVolunteers').value = eventData.max_volunteers;
+            document.getElementById('cost').value = eventData.cost || '';
+            document.getElementById('benefits').value = eventData.benefits || '';
+            document.getElementById('closeRegistration').value = eventData.close_registration || '';
+            document.getElementById('status').value = eventData.status;
+            
+            if (eventData.event_image) {
+                document.getElementById('currentImage').innerHTML = 
+                    '<img src="../uploads/events/' + eventData.event_image + '" style="max-width: 200px;" class="img-thumbnail">';
+            }
+            
+            new bootstrap.Modal(document.getElementById('createEventModal')).show();
+        }
+
+        function deleteEvent(id, title) {
+            if (confirm('⚠️ Are you sure you want to delete event: ' + title + '?')) {
+                const formData = new FormData();
+                formData.append('action', 'delete');
+                formData.append('event_id', id);
+
+                fetch('events_handler.php', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'action=toggle_status&event_id=' + eventId
+                    body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -332,61 +489,28 @@ $stats = mysqli_fetch_assoc($statsResult);
                     } else {
                         alert('❌ Error: ' + data.message);
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('❌ An error occurred!');
                 });
             }
         }
 
-        // Unpublish Event
-        function unpublishEvent(eventId) {
-            if (confirm('Unpublish this event? It will no longer be visible to volunteers.')) {
-                fetch('event_handler.php', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'action=toggle_status&event_id=' + eventId
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert('✅ ' + data.message);
-                        location.reload();
-                    } else {
-                        alert('❌ Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('❌ An error occurred!');
-                });
-            }
+        function viewEvent(id) {
+            window.open('../event_detail.php?id=' + id, '_blank');
         }
 
-        // Delete Event
-        function deleteEvent(eventId, eventTitle) {
-            if (confirm('⚠️ Are you sure you want to delete "' + eventTitle + '"?\n\nThis action cannot be undone and will also delete all registrations.')) {
-                fetch('event_handler.php', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'action=delete&event_id=' + eventId
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert('✅ ' + data.message);
-                        location.reload();
-                    } else {
-                        alert('❌ Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('❌ An error occurred!');
-                });
-            }
+        function viewRegistrations(id) {
+            window.location.href = 'event_registrations.php?event_id=' + id;
         }
+
+        // Reset form when modal closes
+        document.getElementById('createEventModal').addEventListener('hidden.bs.modal', function() {
+            document.getElementById('eventForm').reset();
+            document.getElementById('formAction').value = 'create';
+            document.getElementById('eventId').value = '';
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Create New Event';
+            document.getElementById('submitBtnText').textContent = 'Create Event';
+            document.getElementById('currentImage').innerHTML = '';
+        });
     </script>
 </body>
 </html>
+<?php mysqli_close($conn); ?>

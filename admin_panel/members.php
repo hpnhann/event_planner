@@ -64,14 +64,14 @@ $membersResult = mysqli_query($conn, $membersQuery);
             padding-bottom: 1rem;
             border-bottom: 2px solid #e0e0e0;
         }
-        .btn-back {
+        /* .btn-back {
             background-color: #6c757d;
             color: white;
         }
         .btn-back:hover {
             background-color: #5a6268;
             color: white;
-        }
+        } */
         .btn-add {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -132,11 +132,11 @@ $membersResult = mysqli_query($conn, $membersQuery);
                     <p class="text-muted mb-0">Quản lý danh sách thành viên tham gia tình nguyện</p>
                 </div>
                 <div>
-                    <a href="dashboard.php" class="btn btn-back me-2">
-                        <i class="fas fa-arrow-left"></i> Back
+                    <!-- <a href="dashboard.php" class="btn btn-back me-2">
+                        <i class="fas fa-arrow-left"></i> Back -->
                     </a>
                     <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addMemberModal">
-                        <i class="fas fa-plus"></i> Thêm mới nhân sự
+                        <i class="fas fa-plus"></i> Add new member
                     </button>
                 </div>
             </div>
@@ -148,7 +148,7 @@ $membersResult = mysqli_query($conn, $membersQuery);
             </div>
             <div class="col-md-6 text-end">
                 <span class="badge bg-primary">
-                    Tổng số: <?php echo mysqli_num_rows($membersResult); ?> thành viên
+                    Total: <?php echo mysqli_num_rows($membersResult); ?> members
                 </span>
             </div>
         </div>
@@ -194,8 +194,8 @@ $membersResult = mysqli_query($conn, $membersQuery);
                                     </span>
                                 </td>
                                 <td style="white-space: nowrap;">
-                                    <button class="btn btn-sm btn-primary btn-action" onclick="viewMember(<?php echo $member['id']; ?>)">
-                                        <i class="fas fa-eye"></i>
+                                    <!-- <button class="btn btn-sm btn-primary btn-action" onclick="viewMember(<?php echo $member['id']; ?>)">
+                                        <i class="fas fa-eye"></i> -->
                                     </button>
                                     <button class="btn btn-sm btn-warning btn-action" onclick='editMember(<?php echo json_encode($member); ?>)'>
                                         <i class="fas fa-edit"></i>
@@ -220,175 +220,258 @@ $membersResult = mysqli_query($conn, $membersQuery);
     </div>
 
     <!-- Modal Add Member -->
-    <div class="modal fade" id="addMemberModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-primary">
-                    <h5 class="modal-title"><i class="fas fa-user-plus"></i> Thêm mới nhân sự</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <form id="addMemberForm">
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Mã thành viên <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="student_id" required placeholder="001">
-                            </div>
-                            <div class="col-md-9 mb-3">
-                                <label class="form-label">Tên thành viên <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="full_name" required placeholder="Nguyễn Trần Hoàng Anh">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Vị trí</label>
-                                <select class="form-control" name="position">
-                                    <option value="">Chọn vị trí</option>
-                                    <option value="Ban tổ chức">Ban tổ chức</option>
-                                    <option value="Truyền thông">Truyền thông</option>
-                                    <option value="Hành chính">Hành chính</option>
-                                    <option value="Thành viên">Thành viên</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Ban hoạt động</label>
-                                <input type="text" class="form-control" name="department" placeholder="Truyền thông">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" name="email" required placeholder="hoanganh@gmail.com">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Phone <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control" name="phone" required placeholder="0109293829">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Sinh nhật</label>
-                                <input type="date" class="form-control" name="birthday">
-                            </div>
-                            <div class="col-md-8 mb-3">
-                                <label class="form-label">Khoa</label>
-                                <input type="text" class="form-control" name="faculty" placeholder="Hệ thống thông tin">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Khóa</label>
-                                <input type="text" class="form-control" name="academic_year" placeholder="K16">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Lớp</label>
-                                <input type="text" class="form-control" name="class_name" placeholder="CTTT2021">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Trạng thái</label>
-                                <select class="form-control" name="status" required>
-                                    <option value="active">Hoạt động</option>
-                                    <option value="inactive">Ngưng hoạt động</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Lưu
-                        </button>
-                    </div>
-                </form>
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-warning py-2"> <h5 class="modal-title text-dark fs-6"><i class="fas fa-add"></i> Add new member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+            
+            <form id="addMemberForm">
+                <input type="hidden" name="id" id="addMemberId">
+                <div class="modal-body py-3"> <div class="row mb-2 align-items-center"> 
+                        <label class="col-md-3 col-form-label">Member ID <span class="text-danger">*</span></label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" name="student_id" id="addStudentId" 
+                                   required 
+                                   placeholder="Chỉ nhập số"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Full name <span class="text-danger">*</span></label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" name="full_name" id="addFullName" 
+                                   required maxlength="255">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Role</label>
+                        <div class="col-md-9">
+                            <select class="form-control" name="position" id="addPosition">
+                                <option value="">Select role</option>
+                                <option value="Organizer">Organizer (Ban tổ chức)</option>
+                                <option value="Member">Member (Thành viên)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Falcuty</label>
+                        <div class="col-md-9">
+                            <select class="form-control" name="department" id="addDepartment">
+                                <option value="">Select faculty</option>
+                                <option value="Activity">Activity (Ban hoạt động)</option>
+                                <option value="Media">Media (Ban truyền thông)</option>
+                                <option value="Human resources">Human resources (Ban nhân sự)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Email <span class="text-danger">*</span></label>
+                        <div class="col-md-9">
+                            <input type="email" class="form-control" name="email" id="editEmail" 
+                                   required maxlength="255">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Phone <span class="text-danger">*</span></label>
+                        <div class="col-md-9">
+                            <input type="tel" class="form-control" name="phone" id="addPhone" 
+                                   required 
+                                   maxlength="10"
+                                   pattern="[0-9]{10}"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                   placeholder="Nhập đủ 10 số">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Birthday</label>
+                        <div class="col-md-9">
+                            <input type="date" class="form-control" name="birthday" id="addBirthday">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Faculty</label>
+                        <div class="col-md-9">
+                            <select class="form-control" name="faculty" id="addFaculty">
+                                <option value="">Select faculty</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Computer Engineering">Computer Engineering</option>
+                                <option value="Software Engineering">Software Engineering</option>
+                                <option value="Computer Networks and Communications">Computer Networks and Communications</option>
+                                <option value="Information Systems">Information Systems</option>
+                                <option value="Information Science and Engineering">Information Science and Engineering</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Intake</label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" name="academic_year" id="addAcademicYear" maxlength="255">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Class</label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" name="class_name" id="addClassName" maxlength="255">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Status</label>
+                        <div class="col-md-9">
+                            <select class="form-control" name="status" id="addStatus" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer py-2"> <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4">Save</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
     <!-- Modal Edit Member -->
-    <div class="modal fade" id="editMemberModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title text-dark"><i class="fas fa-edit"></i> Sửa thông tin nhân sự</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form id="editMemberForm">
-                    <input type="hidden" name="id" id="editMemberId">
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Mã thành viên <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="student_id" id="editStudentId" required>
-                            </div>
-                            <div class="col-md-9 mb-3">
-                                <label class="form-label">Tên thành viên <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="full_name" id="editFullName" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Vị trí</label>
-                                <select class="form-control" name="position" id="editPosition">
-                                    <option value="">Chọn vị trí</option>
-                                    <option value="Ban tổ chức">Ban tổ chức</option>
-                                    <option value="Truyền thông">Truyền thông</option>
-                                    <option value="Hành chính">Hành chính</option>
-                                    <option value="Thành viên">Thành viên</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Ban hoạt động</label>
-                                <input type="text" class="form-control" name="department" id="editDepartment">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" name="email" id="editEmail" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Phone <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control" name="phone" id="editPhone" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Sinh nhật</label>
-                                <input type="date" class="form-control" name="birthday" id="editBirthday">
-                            </div>
-                            <div class="col-md-8 mb-3">
-                                <label class="form-label">Khoa</label>
-                                <input type="text" class="form-control" name="faculty" id="editFaculty">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Khóa</label>
-                                <input type="text" class="form-control" name="academic_year" id="editAcademicYear">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Lớp</label>
-                                <input type="text" class="form-control" name="class_name" id="editClassName">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Trạng thái</label>
-                                <select class="form-control" name="status" id="editStatus" required>
-                                    <option value="active">Hoạt động</option>
-                                    <option value="inactive">Ngưng hoạt động</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-warning">
-                            <i class="fas fa-save"></i> Cập nhật
-                        </button>
-                    </div>
-                </form>
+<div class="modal fade" id="editMemberModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-warning py-2"> <h5 class="modal-title text-dark fs-6"><i class="fas fa-edit"></i> Edit member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+            
+            <form id="editMemberForm">
+                <input type="hidden" name="id" id="editMemberId">
+                <div class="modal-body py-3"> <div class="row mb-2 align-items-center"> 
+                        <label class="col-md-3 col-form-label">Member ID <span class="text-danger">*</span></label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" name="student_id" id="editStudentId" 
+                                   required 
+                                   placeholder="Chỉ nhập số"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Full name <span class="text-danger">*</span></label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" name="full_name" id="editFullName" 
+                                   required maxlength="255">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Role</label>
+                        <div class="col-md-9">
+                            <select class="form-control" name="position" id="editPosition">
+                                <option value="">Select role</option>
+                                <option value="Organizer">Organizer (Ban tổ chức)</option>
+                                <option value="Member">Member (Thành viên)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Falcuty</label>
+                        <div class="col-md-9">
+                            <select class="form-control" name="department" id="editDepartment">
+                                <option value="">Select faculty</option>
+                                <option value="Activity">Activity (Ban hoạt động)</option>
+                                <option value="Media">Media (Ban truyền thông)</option>
+                                <option value="Human resources">Human resources (Ban nhân sự)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Email <span class="text-danger">*</span></label>
+                        <div class="col-md-9">
+                            <input type="email" class="form-control" name="email" id="editEmail" 
+                                   required maxlength="255">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Phone <span class="text-danger">*</span></label>
+                        <div class="col-md-9">
+                            <input type="tel" class="form-control" name="phone" id="editPhone" 
+                                   required 
+                                   maxlength="10"
+                                   pattern="[0-9]{10}"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                   placeholder="Nhập đủ 10 số">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Birthday</label>
+                        <div class="col-md-9">
+                            <input type="date" class="form-control" name="birthday" id="editBirthday">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Faculty</label>
+                        <div class="col-md-9">
+                            <select class="form-control" name="faculty" id="editFaculty">
+                                <option value="">Select faculty</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Computer Engineering">Computer Engineering</option>
+                                <option value="Software Engineering">Software Engineering</option>
+                                <option value="Computer Networks and Communications">Computer Networks and Communications</option>
+                                <option value="Information Systems">Information Systems</option>
+                                <option value="Information Science and Engineering">Information Science and Engineering</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Intake</label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" name="academic_year" id="editAcademicYear" maxlength="255">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Class</label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" name="class_name" id="editClassName" maxlength="255">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <label class="col-md-3 col-form-label">Status</label>
+                        <div class="col-md-9">
+                            <select class="form-control" name="status" id="editStatus" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer py-2"> <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4">Save</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
     <!-- Modal View Member -->
     <div class="modal fade" id="viewMemberModal" tabindex="-1">
@@ -606,5 +689,7 @@ $membersResult = mysqli_query($conn, $membersQuery);
                 });
         }
     </script>
+
+    
 </body>
 </html>

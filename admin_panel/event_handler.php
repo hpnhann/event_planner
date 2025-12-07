@@ -35,21 +35,29 @@ if ($action === 'create') {
     $event_title = mysqli_real_escape_string($conn, trim($_POST['event_title']));
     $event_description = mysqli_real_escape_string($conn, trim($_POST['event_description']));
     $event_location = mysqli_real_escape_string($conn, trim($_POST['event_location']));
-    $event_date = $_POST['event_date'];
-    $event_time = $_POST['event_time'];
+    
+    // --- [SỬA] Thay thế event_date/time cũ bằng các trường DateTime mới ---
+    $start_date = $_POST['start_date']; // Chọn cả ngày và giờ
+    $end_date = $_POST['end_date'];     // Chọn cả ngày và giờ
+    $registration_deadline = $_POST['registration_deadline']; // Hạn chót đăng ký
+    
+    // --- [THÊM] Các trường mới ---
     $max_volunteers = intval($_POST['max_volunteers']);
+    $cost = isset($_POST['cost']) ? floatval($_POST['cost']) : 0; // Numeric textbox
+    $benefits = mysqli_real_escape_string($conn, trim($_POST['benefits'])); // Textbox
+    
     $submit_type = $_POST['submit_type']; // 'draft' or 'publish'
 
-    // Validate inputs
+    // --- [SỬA] Cập nhật Validate inputs ---
     if (empty($event_title) || empty($event_description) || empty($event_location) || 
-        empty($event_date) || empty($event_time) || $max_volunteers < 1) {
+        empty($start_date) || empty($end_date) || empty($registration_deadline) || $max_volunteers < 1) {
         $response['status'] = 'error';
-        $response['message'] = 'All fields are required!';
+        $response['message'] = 'All fields (Title, Location, Dates, Volunteers) are required!';
         echo json_encode($response);
         exit();
     }
 
-    // Handle image upload
+    // Handle image upload (GIỮ NGUYÊN CODE CỦA BẠN)
     $event_image = NULL;
     if (isset($_FILES['event_image']) && $_FILES['event_image']['error'] == 0) {
         $allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
@@ -73,20 +81,25 @@ if ($action === 'create') {
         }
     }
 
-    // Determine status
+    // Determine status (GIỮ NGUYÊN)
     $status = ($submit_type == 'publish') ? 'published' : 'draft';
     $published_at = ($status == 'published') ? 'NOW()' : 'NULL';
 
-    // Insert event
+    // --- [SỬA] Cập nhật câu lệnh INSERT ---
+    // Lưu ý: Database cần có các cột: start_date, end_date, cost, benefits, registration_deadline
     $sql = "INSERT INTO events 
-            (event_title, event_description, event_location, event_date, event_time, 
-             max_volunteers, event_image, status, created_by, published_at) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, $published_at)";
+            (event_title, event_description, event_location, start_date, end_date, 
+             max_volunteers, cost, benefits, registration_deadline, event_image, status, created_by, published_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, $published_at)";
     
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "sssssissi", 
+    
+    // Type string mapping:
+    // s (title), s (desc), s (loc), s (start), s (end), i (max), d (cost - double), s (benefits), s (deadline), s (img), s (status), i (uid)
+    mysqli_stmt_bind_param($stmt, "sssssidssssi", 
         $event_title, $event_description, $event_location, 
-        $event_date, $event_time, $max_volunteers, 
+        $start_date, $end_date, 
+        $max_volunteers, $cost, $benefits, $registration_deadline,
         $event_image, $status, $uid
     );
 
@@ -113,20 +126,27 @@ elseif ($action === 'edit') {
     $event_title = mysqli_real_escape_string($conn, trim($_POST['event_title']));
     $event_description = mysqli_real_escape_string($conn, trim($_POST['event_description']));
     $event_location = mysqli_real_escape_string($conn, trim($_POST['event_location']));
-    $event_date = $_POST['event_date'];
-    $event_time = $_POST['event_time'];
+    
+    // --- [SỬA] Các trường DateTime mới ---
+    $start_date = $_POST['start_date'];
+    $end_date = $_POST['end_date'];
+    $registration_deadline = $_POST['registration_deadline'];
+    
+    // --- [THÊM] Các trường mới ---
     $max_volunteers = intval($_POST['max_volunteers']);
+    $cost = isset($_POST['cost']) ? floatval($_POST['cost']) : 0;
+    $benefits = mysqli_real_escape_string($conn, trim($_POST['benefits']));
 
-    // Validate inputs
+    // --- [SỬA] Validate inputs ---
     if (empty($event_title) || empty($event_description) || empty($event_location) || 
-        empty($event_date) || empty($event_time) || $max_volunteers < 1) {
+        empty($start_date) || empty($end_date) || empty($registration_deadline) || $max_volunteers < 1) {
         $response['status'] = 'error';
         $response['message'] = 'All fields are required!';
         echo json_encode($response);
         exit();
     }
 
-    // Check ownership
+    // Check ownership (GIỮ NGUYÊN)
     $checkQuery = "SELECT event_image FROM events WHERE id=? AND created_by=?";
     $checkStmt = mysqli_prepare($conn, $checkQuery);
     mysqli_stmt_bind_param($checkStmt, "ii", $event_id, $uid);
@@ -145,7 +165,7 @@ elseif ($action === 'edit') {
     $event_image = $oldData['event_image'];
     mysqli_stmt_close($checkStmt);
 
-    // Handle new image upload
+    // Handle new image upload (GIỮ NGUYÊN)
     if (isset($_FILES['event_image']) && $_FILES['event_image']['error'] == 0) {
         $allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
         $file_type = $_FILES['event_image']['type'];
@@ -170,16 +190,22 @@ elseif ($action === 'edit') {
         }
     }
 
-    // Update event
+    // --- [SỬA] Update SQL ---
     $sql = "UPDATE events SET 
             event_title=?, event_description=?, event_location=?, 
-            event_date=?, event_time=?, max_volunteers=?, event_image=?
+            start_date=?, end_date=?, max_volunteers=?, 
+            cost=?, benefits=?, registration_deadline=?, 
+            event_image=?
             WHERE id=? AND created_by=?";
     
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "sssssissi", 
+    
+    // Type string mapping:
+    // s (title), s (desc), s (loc), s (start), s (end), i (max), d (cost), s (benefits), s (deadline), s (img), i (id), i (uid)
+    mysqli_stmt_bind_param($stmt, "sssssidsssii", 
         $event_title, $event_description, $event_location, 
-        $event_date, $event_time, $max_volunteers, 
+        $start_date, $end_date, $max_volunteers, 
+        $cost, $benefits, $registration_deadline, 
         $event_image, $event_id, $uid
     );
 
@@ -192,7 +218,6 @@ elseif ($action === 'edit') {
     }
     mysqli_stmt_close($stmt);
 }
-
 // ========================================
 // TOGGLE PUBLISH/UNPUBLISH
 // ========================================
