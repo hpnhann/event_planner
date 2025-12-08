@@ -1,328 +1,230 @@
 <?php
 error_reporting(0);
+ini_set('display_errors', 0);
 session_start();
 header('Content-Type: application/json');
 
-// Check if admin
-if (!isset($_SESSION['uid'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+function sendJson($data) {
+    echo json_encode($data);
     exit();
 }
 
+if (!isset($_SESSION['uid'])) {
+    sendJson(['status' => 'error', 'message' => 'Not logged in']);
+}
+
+if (!file_exists('../assets/config.php')) {
+    sendJson(['status' => 'error', 'message' => 'Config not found']);
+}
+
 include('../assets/config.php');
+
+if (!$conn) {
+    sendJson(['status' => 'error', 'message' => 'Database connection failed']);
+}
+
 $uid = $_SESSION['uid'];
 
-$query = "SELECT `role` FROM `users` WHERE `users`.`id`=?";
+// Check admin
+$query = "SELECT role FROM users WHERE id=?";
 $stmt = mysqli_prepare($conn, $query);
 mysqli_stmt_bind_param($stmt, "s", $uid);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
-$row = mysqli_fetch_array($result);
+$row = mysqli_fetch_assoc($result);
 mysqli_stmt_close($stmt);
 
 if (!$row || $row['role'] !== 'admin') {
-    echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
-    exit();
+    sendJson(['status' => 'error', 'message' => 'Unauthorized']);
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : '';
-$response = array();
 
-// ========================================
 // CREATE EVENT
-// ========================================
 if ($action === 'create') {
-    $event_title = mysqli_real_escape_string($conn, trim($_POST['event_title']));
-    $event_description = mysqli_real_escape_string($conn, trim($_POST['event_description']));
-    $event_location = mysqli_real_escape_string($conn, trim($_POST['event_location']));
-    
-    // --- [SỬA] Thay thế event_date/time cũ bằng các trường DateTime mới ---
-    $start_date = $_POST['start_date']; // Chọn cả ngày và giờ
-    $end_date = $_POST['end_date'];     // Chọn cả ngày và giờ
-    $registration_deadline = $_POST['registration_deadline']; // Hạn chót đăng ký
-    
-    // --- [THÊM] Các trường mới ---
-    $max_volunteers = intval($_POST['max_volunteers']);
-    $cost = isset($_POST['cost']) ? floatval($_POST['cost']) : 0; // Numeric textbox
-    $benefits = mysqli_real_escape_string($conn, trim($_POST['benefits'])); // Textbox
-    
-    $submit_type = $_POST['submit_type']; // 'draft' or 'publish'
+    $event_title = mysqli_real_escape_string($conn, trim($_POST['event_title'] ?? ''));
+    $event_description = mysqli_real_escape_string($conn, trim($_POST['event_description'] ?? ''));
+    $event_location = mysqli_real_escape_string($conn, trim($_POST['event_location'] ?? ''));
+    $event_date = $_POST['event_date'] ?? '';
+    $event_time = $_POST['event_time'] ?? '';
+    $end_date = $_POST['end_date'] ?? '';
+    $registration_deadline = $_POST['registration_deadline'] ?? '';
+    $activity_code = $_POST['activity_code'] ?? '';
+    $max_volunteers = intval($_POST['max_volunteers'] ?? 0);
+    $cost = floatval($_POST['cost'] ?? 0);
+    $benefits = mysqli_real_escape_string($conn, trim($_POST['benefits'] ?? ''));
+    $status = $_POST['status'] ?? 'draft';
 
-    // --- [SỬA] Cập nhật Validate inputs ---
-    if (empty($event_title) || empty($event_description) || empty($event_location) || 
-        empty($start_date) || empty($end_date) || empty($registration_deadline) || $max_volunteers < 1) {
-        $response['status'] = 'error';
-        $response['message'] = 'All fields (Title, Location, Dates, Volunteers) are required!';
-        echo json_encode($response);
-        exit();
-    }
+    if (empty($event_title)) sendJson(['status' => 'error', 'message' => 'Title required']);
+    if (empty($event_description)) sendJson(['status' => 'error', 'message' => 'Description required']);
+    if (empty($event_location)) sendJson(['status' => 'error', 'message' => 'Location required']);
+    if (empty($event_date)) sendJson(['status' => 'error', 'message' => 'Date required']);
+    if (empty($event_time)) sendJson(['status' => 'error', 'message' => 'Time required']);
+    if (empty($end_date)) sendJson(['status' => 'error', 'message' => 'End date required']);
+    if (empty($registration_deadline)) sendJson(['status' => 'error', 'message' => 'Deadline required']);
+    if ($max_volunteers < 1) sendJson(['status' => 'error', 'message' => 'Max volunteers must be >= 1']);
 
-    // Handle image upload (GIỮ NGUYÊN CODE CỦA BẠN)
     $event_image = NULL;
-    if (isset($_FILES['event_image']) && $_FILES['event_image']['error'] == 0) {
-        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-        $file_type = $_FILES['event_image']['type'];
-        
-        if (in_array($file_type, $allowed_types)) {
+    if (isset($_FILES['event_image']) && $_FILES['event_image']['error'] == UPLOAD_ERR_OK) {
+        $allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+        if (in_array($_FILES['event_image']['type'], $allowed)) {
             $upload_dir = '../uploads/events/';
+            if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
             
-            // Create directory if not exists
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-            
-            $file_extension = pathinfo($_FILES['event_image']['name'], PATHINFO_EXTENSION);
-            $event_image = 'event_' . time() . '_' . rand(1000, 9999) . '.' . $file_extension;
-            $upload_path = $upload_dir . $event_image;
-            
-            if (!move_uploaded_file($_FILES['event_image']['tmp_name'], $upload_path)) {
-                $event_image = NULL;
-            }
+            $ext = pathinfo($_FILES['event_image']['name'], PATHINFO_EXTENSION);
+            $event_image = 'event_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            move_uploaded_file($_FILES['event_image']['tmp_name'], $upload_dir . $event_image);
         }
     }
 
-    // Determine status (GIỮ NGUYÊN)
-    $status = ($submit_type == 'publish') ? 'published' : 'draft';
-    $published_at = ($status == 'published') ? 'NOW()' : 'NULL';
+    $end_date = str_replace('T', ' ', $end_date);
+    if (strlen($end_date) == 16) $end_date .= ':00';
+    
+    $registration_deadline = str_replace('T', ' ', $registration_deadline);
+    if (strlen($registration_deadline) == 16) $registration_deadline .= ':00';
 
-    // --- [SỬA] Cập nhật câu lệnh INSERT ---
-    // Lưu ý: Database cần có các cột: start_date, end_date, cost, benefits, registration_deadline
+    $published_at = ($status == 'published') ? date('Y-m-d H:i:s') : NULL;
+
     $sql = "INSERT INTO events 
-            (event_title, event_description, event_location, start_date, end_date, 
-             max_volunteers, cost, benefits, registration_deadline, event_image, status, created_by, published_at) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, $published_at)";
+            (activity_code, event_title, event_description, event_location, 
+             event_date, event_time, end_date, max_volunteers, cost, benefits, 
+             registration_deadline, event_image, status, created_by, published_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     $stmt = mysqli_prepare($conn, $sql);
-    
-    // Type string mapping:
-    // s (title), s (desc), s (loc), s (start), s (end), i (max), d (cost - double), s (benefits), s (deadline), s (img), s (status), i (uid)
-    mysqli_stmt_bind_param($stmt, "sssssidssssi", 
-        $event_title, $event_description, $event_location, 
-        $start_date, $end_date, 
-        $max_volunteers, $cost, $benefits, $registration_deadline,
-        $event_image, $status, $uid
+    mysqli_stmt_bind_param($stmt, "sssssssidsssiss", 
+        $activity_code, $event_title, $event_description, $event_location, 
+        $event_date, $event_time, $end_date, $max_volunteers, $cost, 
+        $benefits, $registration_deadline, $event_image, $status, $uid, $published_at
     );
 
     if (mysqli_stmt_execute($stmt)) {
-        if ($status == 'published') {
-            $response['status'] = 'success';
-            $response['message'] = 'Event published successfully! Volunteers can now register.';
-        } else {
-            $response['status'] = 'success';
-            $response['message'] = 'Event saved as draft! You can publish it later.';
-        }
+        mysqli_stmt_close($stmt);
+        mysqli_close($conn);
+        sendJson(['status' => 'success', 'message' => 'Event created!']);
     } else {
-        $response['status'] = 'error';
-        $response['message'] = 'Failed to create event: ' . mysqli_error($conn);
+        mysqli_stmt_close($stmt);
+        mysqli_close($conn);
+        sendJson(['status' => 'error', 'message' => 'Insert failed']);
     }
-    mysqli_stmt_close($stmt);
 }
 
-// ========================================
 // EDIT EVENT
-// ========================================
 elseif ($action === 'edit') {
-    $event_id = intval($_POST['event_id']);
-    $event_title = mysqli_real_escape_string($conn, trim($_POST['event_title']));
-    $event_description = mysqli_real_escape_string($conn, trim($_POST['event_description']));
-    $event_location = mysqli_real_escape_string($conn, trim($_POST['event_location']));
+    $event_id = intval($_POST['event_id'] ?? 0);
+    if ($event_id < 1) sendJson(['status' => 'error', 'message' => 'Invalid ID']);
     
-    // --- [SỬA] Các trường DateTime mới ---
-    $start_date = $_POST['start_date'];
-    $end_date = $_POST['end_date'];
-    $registration_deadline = $_POST['registration_deadline'];
-    
-    // --- [THÊM] Các trường mới ---
-    $max_volunteers = intval($_POST['max_volunteers']);
-    $cost = isset($_POST['cost']) ? floatval($_POST['cost']) : 0;
-    $benefits = mysqli_real_escape_string($conn, trim($_POST['benefits']));
+    $event_title = mysqli_real_escape_string($conn, trim($_POST['event_title'] ?? ''));
+    $event_description = mysqli_real_escape_string($conn, trim($_POST['event_description'] ?? ''));
+    $event_location = mysqli_real_escape_string($conn, trim($_POST['event_location'] ?? ''));
+    $event_date = $_POST['event_date'] ?? '';
+    $event_time = $_POST['event_time'] ?? '';
+    $end_date = $_POST['end_date'] ?? '';
+    $registration_deadline = $_POST['registration_deadline'] ?? '';
+    $activity_code = $_POST['activity_code'] ?? '';
+    $max_volunteers = intval($_POST['max_volunteers'] ?? 0);
+    $cost = floatval($_POST['cost'] ?? 0);
+    $benefits = mysqli_real_escape_string($conn, trim($_POST['benefits'] ?? ''));
+    $status = $_POST['status'] ?? 'draft';
 
-    // --- [SỬA] Validate inputs ---
-    if (empty($event_title) || empty($event_description) || empty($event_location) || 
-        empty($start_date) || empty($end_date) || empty($registration_deadline) || $max_volunteers < 1) {
-        $response['status'] = 'error';
-        $response['message'] = 'All fields are required!';
-        echo json_encode($response);
-        exit();
-    }
+    if (empty($event_title)) sendJson(['status' => 'error', 'message' => 'Title required']);
+    if ($max_volunteers < 1) sendJson(['status' => 'error', 'message' => 'Max volunteers must be >= 1']);
 
-    // Check ownership (GIỮ NGUYÊN)
-    $checkQuery = "SELECT event_image FROM events WHERE id=? AND created_by=?";
-    $checkStmt = mysqli_prepare($conn, $checkQuery);
-    mysqli_stmt_bind_param($checkStmt, "ii", $event_id, $uid);
+    $checkSql = "SELECT event_image FROM events WHERE id=? AND created_by=?";
+    $checkStmt = mysqli_prepare($conn, $checkSql);
+    mysqli_stmt_bind_param($checkStmt, "is", $event_id, $uid);
     mysqli_stmt_execute($checkStmt);
     $checkResult = mysqli_stmt_get_result($checkStmt);
     
     if (mysqli_num_rows($checkResult) == 0) {
         mysqli_stmt_close($checkStmt);
-        $response['status'] = 'error';
-        $response['message'] = 'Event not found or access denied!';
-        echo json_encode($response);
-        exit();
+        sendJson(['status' => 'error', 'message' => 'Event not found']);
     }
     
     $oldData = mysqli_fetch_assoc($checkResult);
     $event_image = $oldData['event_image'];
     mysqli_stmt_close($checkStmt);
 
-    // Handle new image upload (GIỮ NGUYÊN)
-    if (isset($_FILES['event_image']) && $_FILES['event_image']['error'] == 0) {
-        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-        $file_type = $_FILES['event_image']['type'];
-        
-        if (in_array($file_type, $allowed_types)) {
+    if (isset($_FILES['event_image']) && $_FILES['event_image']['error'] == UPLOAD_ERR_OK) {
+        $allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+        if (in_array($_FILES['event_image']['type'], $allowed)) {
             $upload_dir = '../uploads/events/';
-            
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-            
-            // Delete old image
             if ($event_image && file_exists($upload_dir . $event_image)) {
                 unlink($upload_dir . $event_image);
             }
             
-            $file_extension = pathinfo($_FILES['event_image']['name'], PATHINFO_EXTENSION);
-            $event_image = 'event_' . time() . '_' . rand(1000, 9999) . '.' . $file_extension;
-            $upload_path = $upload_dir . $event_image;
-            
-            move_uploaded_file($_FILES['event_image']['tmp_name'], $upload_path);
+            $ext = pathinfo($_FILES['event_image']['name'], PATHINFO_EXTENSION);
+            $event_image = 'event_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            move_uploaded_file($_FILES['event_image']['tmp_name'], $upload_dir . $event_image);
         }
     }
 
-    // --- [SỬA] Update SQL ---
+    $end_date = str_replace('T', ' ', $end_date);
+    if (strlen($end_date) == 16) $end_date .= ':00';
+    
+    $registration_deadline = str_replace('T', ' ', $registration_deadline);
+    if (strlen($registration_deadline) == 16) $registration_deadline .= ':00';
+
     $sql = "UPDATE events SET 
-            event_title=?, event_description=?, event_location=?, 
-            start_date=?, end_date=?, max_volunteers=?, 
-            cost=?, benefits=?, registration_deadline=?, 
-            event_image=?
+            activity_code=?, event_title=?, event_description=?, event_location=?, 
+            event_date=?, event_time=?, end_date=?, max_volunteers=?, cost=?, 
+            benefits=?, registration_deadline=?, event_image=?, status=?
             WHERE id=? AND created_by=?";
     
     $stmt = mysqli_prepare($conn, $sql);
-    
-    // Type string mapping:
-    // s (title), s (desc), s (loc), s (start), s (end), i (max), d (cost), s (benefits), s (deadline), s (img), i (id), i (uid)
-    mysqli_stmt_bind_param($stmt, "sssssidsssii", 
-        $event_title, $event_description, $event_location, 
-        $start_date, $end_date, $max_volunteers, 
-        $cost, $benefits, $registration_deadline, 
-        $event_image, $event_id, $uid
+    mysqli_stmt_bind_param($stmt, "sssssssidssssis", 
+        $activity_code, $event_title, $event_description, $event_location, 
+        $event_date, $event_time, $end_date, $max_volunteers, $cost, 
+        $benefits, $registration_deadline, $event_image, $status, $event_id, $uid
     );
 
     if (mysqli_stmt_execute($stmt)) {
-        $response['status'] = 'success';
-        $response['message'] = 'Event updated successfully!';
-    } else {
-        $response['status'] = 'error';
-        $response['message'] = 'Failed to update event: ' . mysqli_error($conn);
-    }
-    mysqli_stmt_close($stmt);
-}
-// ========================================
-// TOGGLE PUBLISH/UNPUBLISH
-// ========================================
-elseif ($action === 'toggle_status') {
-    $event_id = intval($_POST['event_id']);
-    
-    // Get current status
-    $query = "SELECT status FROM events WHERE id=? AND created_by=?";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "ii", $event_id, $uid);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    if (mysqli_num_rows($result) == 0) {
         mysqli_stmt_close($stmt);
-        $response['status'] = 'error';
-        $response['message'] = 'Event not found or access denied!';
-        echo json_encode($response);
-        exit();
-    }
-    
-    $row = mysqli_fetch_assoc($result);
-    $current_status = $row['status'];
-    mysqli_stmt_close($stmt);
-    
-    // Toggle status
-    $new_status = ($current_status == 'draft') ? 'published' : 'draft';
-    
-    if ($new_status == 'published') {
-        $update = "UPDATE events SET status=?, published_at=NOW() WHERE id=? AND created_by=?";
+        mysqli_close($conn);
+        sendJson(['status' => 'success', 'message' => 'Event updated!']);
     } else {
-        $update = "UPDATE events SET status=?, published_at=NULL WHERE id=? AND created_by=?";
+        mysqli_stmt_close($stmt);
+        mysqli_close($conn);
+        sendJson(['status' => 'error', 'message' => 'Update failed']);
     }
-    
-    $stmt = mysqli_prepare($conn, $update);
-    mysqli_stmt_bind_param($stmt, "sii", $new_status, $event_id, $uid);
-    
-    if (mysqli_stmt_execute($stmt)) {
-        if ($new_status == 'published') {
-            $response['status'] = 'success';
-            $response['message'] = 'Event published successfully! Volunteers can now see and register for this event.';
-        } else {
-            $response['status'] = 'success';
-            $response['message'] = 'Event unpublished! It is now hidden from volunteers.';
-        }
-    } else {
-        $response['status'] = 'error';
-        $response['message'] = 'Failed to update status: ' . mysqli_error($conn);
-    }
-    mysqli_stmt_close($stmt);
 }
 
-// ========================================
 // DELETE EVENT
-// ========================================
 elseif ($action === 'delete') {
-    $event_id = intval($_POST['event_id']);
+    $event_id = intval($_POST['event_id'] ?? 0);
     
-    // Get event image before deleting
     $query = "SELECT event_image FROM events WHERE id=? AND created_by=?";
     $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "ii", $event_id, $uid);
+    mysqli_stmt_bind_param($stmt, "is", $event_id, $uid);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     
     if (mysqli_num_rows($result) == 0) {
         mysqli_stmt_close($stmt);
-        $response['status'] = 'error';
-        $response['message'] = 'Event not found or access denied!';
-        echo json_encode($response);
-        exit();
+        sendJson(['status' => 'error', 'message' => 'Event not found']);
     }
     
     $row = mysqli_fetch_assoc($result);
     $event_image = $row['event_image'];
     mysqli_stmt_close($stmt);
     
-    // Delete event (registrations will be deleted automatically if using CASCADE)
-    $deleteQuery = "DELETE FROM events WHERE id=? AND created_by=?";
-    $deleteStmt = mysqli_prepare($conn, $deleteQuery);
-    mysqli_stmt_bind_param($deleteStmt, "ii", $event_id, $uid);
+    $delSql = "DELETE FROM events WHERE id=? AND created_by=?";
+    $delStmt = mysqli_prepare($conn, $delSql);
+    mysqli_stmt_bind_param($delStmt, "is", $event_id, $uid);
     
-    if (mysqli_stmt_execute($deleteStmt)) {
-        // Delete image file
-        if ($event_image) {
-            $image_path = '../uploads/events/' . $event_image;
-            if (file_exists($image_path)) {
-                unlink($image_path);
-            }
+    if (mysqli_stmt_execute($delStmt)) {
+        if ($event_image && file_exists('../uploads/events/' . $event_image)) {
+            unlink('../uploads/events/' . $event_image);
         }
-        
-        $response['status'] = 'success';
-        $response['message'] = 'Event deleted successfully!';
+        mysqli_stmt_close($delStmt);
+        mysqli_close($conn);
+        sendJson(['status' => 'success', 'message' => 'Event deleted!']);
     } else {
-        $response['status'] = 'error';
-        $response['message'] = 'Failed to delete event: ' . mysqli_error($conn);
+        mysqli_stmt_close($delStmt);
+        mysqli_close($conn);
+        sendJson(['status' => 'error', 'message' => 'Delete failed']);
     }
-    mysqli_stmt_close($deleteStmt);
+} else {
+    sendJson(['status' => 'error', 'message' => 'Invalid action']);
 }
-
-else {
-    $response['status'] = 'error';
-    $response['message'] = 'Invalid action';
-}
-
-mysqli_close($conn);
-echo json_encode($response);
 ?>

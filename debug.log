@@ -1,0 +1,126 @@
+2025-12-08 08:06:16 - Registration attempt
+POST: Array
+(
+    [event_id] => 4
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+Session UID: abcc@gmail.com
+2025-12-08 08:06:19 - Registration attempt
+POST: Array
+(
+    [event_id] => 4
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+Session UID: abcc@gmail.com
+2025-12-08 08:06:35 - Registration attempt
+POST: Array
+(
+    [event_id] => 4
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+Session UID: abcc@gmail.com
+2025-12-08 08:06:53 - Registration attempt
+POST: Array
+(
+    [event_id] => 4
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => haha
+    [action] => register
+)
+
+Session UID: abcc@gmail.com
+2025-12-08 09:24:43 - Registration attempt
+POST: Array
+(
+    [event_id] => 4
+    [user_id] => 29329384
+    [student_id] => 29329384
+    [full_name] => hpn
+    [email] => hpn@gmail.com
+    [phone] => 0123456789
+    [notes] => 
+    [action] => register
+)
+
+Session UID: 29329384
+2025-12-08 09:25:08 - Registration attempt
+POST: Array
+(
+    [event_id] => 4
+    [user_id] => 29329384
+    [student_id] => 29329384
+    [full_name] => hpn
+    [email] => hpn@gmail.com
+    [phone] => 0123456789
+    [notes] => 
+    [action] => register
+)
+
+Session UID: 29329384
+2025-12-08 09:25:11 - Registration attempt
+POST: Array
+(
+    [event_id] => 4
+    [user_id] => 29329384
+    [student_id] => 29329384
+    [full_name] => hpn
+    [email] => hpn@gmail.com
+    [phone] => 0123456789
+    [notes] => 
+    [action] => register
+)
+
+Session UID: 29329384
+2025-12-08 09:25:22 - Registration attempt
+POST: Array
+(
+    [event_id] => 4
+    [user_id] => 29329384
+    [student_id] => 29329384
+    [full_name] => hpn
+    [email] => hpn@gmail.com
+    [phone] => 0123456789
+    [notes] => 
+    [action] => register
+)
+
+Session UID: 29329384
+2025-12-08 09:25:54 - Registration attempt
+POST: Array
+(
+    [event_id] => 4
+    [user_id] => 29329384
+    [student_id] => 29329384
+    [full_name] => hpn
+    [email] => hpn@gmail.com
+    [phone] => 0123456789
+    [notes] => 
+    [action] => register
+)
+
+Session UID: 29329384

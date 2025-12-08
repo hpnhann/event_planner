@@ -2,25 +2,23 @@
 error_reporting(0);
 session_start();
 
+
 // CHECK IF USER IS LOGGED IN
 if (!isset($_SESSION['uid'])) {
-    // Not logged in, redirect to login with event_id
     $event_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-    header('Location: login.php?redirect=event_register&event_id=' . $event_id);
+    header('Location: login.php?redirect=register_event&event_id=' . $event_id);
     exit();
 }
 
-// Get user info
 $user_id = $_SESSION['uid'];
 
-// Kiểm tra file config
 if (file_exists('assets/config.php')) {
     include('assets/config.php');
 } else {
     die("Error: Cannot find config.php file!");
 }
 
-// Get user details from users table
+// Get user details
 $userQuery = "SELECT * FROM users WHERE id = ?";
 $stmt = mysqli_prepare($conn, $userQuery);
 mysqli_stmt_bind_param($stmt, "s", $user_id);
@@ -38,7 +36,7 @@ mysqli_stmt_close($stmt);
 // Get event ID
 $event_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Get event details
+// Get event details with registration count
 $eventQuery = "SELECT e.*, 
                COUNT(DISTINCT r.id) as registered_count 
                FROM events e 
@@ -62,11 +60,22 @@ mysqli_stmt_close($stmt);
 $spots_left = $event['max_volunteers'] - $event['registered_count'];
 $is_full = $spots_left <= 0;
 
-// If event is full, redirect
+// If event is full, redirect back
 if ($is_full) {
-    header('Location: event_detail.php?id=' . $event_id);
+    echo "<script>alert('Sorry, this event is now full!'); window.location.href='event_detail.php?id=" . $event_id . "';</script>";
     exit();
 }
+
+// Check if already registered
+$checkReg = "SELECT id FROM event_registrations WHERE event_id = ? AND user_id = ? AND status != 'cancelled'";
+$stmtCheck = mysqli_prepare($conn, $checkReg);
+mysqli_stmt_bind_param($stmtCheck, "is", $event_id, $user_id);
+mysqli_stmt_execute($stmtCheck);
+if (mysqli_num_rows(mysqli_stmt_get_result($stmtCheck)) > 0) {
+    echo "<script>alert('You have already registered for this event!'); window.location.href='public_events.php';</script>";
+    exit();
+}
+mysqli_stmt_close($stmtCheck);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -148,6 +157,7 @@ if ($is_full) {
             font-size: 1.1rem;
             font-weight: bold;
             width: 100%;
+            transition: all 0.3s;
         }
         .btn-submit:hover {
             transform: translateY(-2px);
@@ -172,8 +182,8 @@ if ($is_full) {
     <div class="register-container">
         <div class="register-card">
             <div class="card-header">
-                <h2><i class="fas fa-hand-paper"></i> Register for Event</h2>
-                <p class="mb-0">Fill in your information to join this volunteer event</p>
+                <h2><i class="fas fa-hand-paper"></i> Complete Your Registration</h2>
+                <p class="mb-0">Please fill in your information below</p>
             </div>
             <div class="card-body">
                 <!-- Event Info -->
@@ -211,13 +221,14 @@ if ($is_full) {
                         <label class="form-label">Student ID <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="student_id" required 
                                placeholder="e.g., S2023001"
-                               value="<?php echo isset($user['id']) ? $user['id'] : ''; ?>">
+                               value="<?php echo htmlspecialchars($user['id']); ?>" readonly>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Full Name <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="full_name" required 
-                               placeholder="Nguyen Van A">
+                               placeholder="Nguyen Van A"
+                               value="<?php echo isset($user['full_name']) ? htmlspecialchars($user['full_name']) : ''; ?>">
                     </div>
 
                     <div class="mb-3">
@@ -230,7 +241,8 @@ if ($is_full) {
                     <div class="mb-3">
                         <label class="form-label">Phone Number <span class="text-danger">*</span></label>
                         <input type="tel" class="form-control" name="phone" required 
-                               placeholder="0901234567">
+                               placeholder="0901234567"
+                               value="<?php echo isset($user['phone']) ? htmlspecialchars($user['phone']) : ''; ?>">
                     </div>
 
                     <div class="mb-3">
@@ -241,7 +253,7 @@ if ($is_full) {
 
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i> 
-                        <small>Your registration will be reviewed by the admin. You will receive a confirmation once approved.</small>
+                        <small>Your registration will be confirmed immediately.</small>
                     </div>
 
                     <div class="d-grid gap-2">
@@ -257,7 +269,7 @@ if ($is_full) {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -270,28 +282,107 @@ if ($is_full) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
 
-            fetch('event_registration_handler.php', {
+            fetch('register_handler.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('✅ ' + data.message + '\n\nYou will receive a confirmation email once your registration is approved.');
-                    window.location.href = 'public_events.php';
-                } else {
-                    alert('❌ Error: ' + data.message);
+            .then(response => response.text())
+            .then(text => {
+                console.log('Server trả về:', text);
+                
+                try {
+                    const data = JSON.parse(text);
+                    
+                    if (data.status === 'success') {
+                        alert('✅ ' + data.message + '\n\nThank you for registering!');
+                        window.location.href = 'public_events.php';
+                    } else {
+                        alert('❌ Lỗi: ' + data.message);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                } catch (e) {
+                    console.error('Lỗi parse JSON:', e);
+                    console.error('Response:', text);
+                    alert('❌ Server trả về dữ liệu lỗi!');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('❌ An error occurred while submitting your registration!');
+                console.error('Fetch error:', error);
+                alert('❌ Không thể kết nối tới server!');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             });
         });
+    </script> -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    (function() {
+        'use strict';
+        
+        const form = document.getElementById('registrationForm');
+        if (!form) return;
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Ngăn event bubble up
+            
+            const formData = new FormData(this);
+            formData.append('action', 'register');
+            
+            console.log('Form data being sent:');
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+            fetch('register_handler.php', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.text();
+            })
+            .then(text => {
+                console.log('Server response:', text);
+                
+                try {
+                    const data = JSON.parse(text);
+                    
+                    if (data.status === 'success') {
+                        alert('✅ ' + data.message);
+                        window.location.href = 'public_events.php';
+                    } else {
+                        alert('❌ Lỗi: ' + data.message);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    console.error('Raw response:', text);
+                    alert('❌ Lỗi: Server trả về dữ liệu không hợp lệ!');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                alert('❌ Không thể kết nối server!');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+            
+            return false;
+        }, false);
+    })();
     </script>
 </body>
 </html>

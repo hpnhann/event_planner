@@ -115,11 +115,18 @@ if (!$eventsResult) {
             color: white;
         }
         .btn-full {
-            background-color: #6c757d;
+            background-color: #dc3545;
             color: white;
             padding: 0.75rem 2rem;
             border-radius: 25px;
             font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-full:hover {
+            background-color: #c82333;
+            color: white;
         }
         .volunteers-badge {
             display: inline-block;
@@ -272,8 +279,8 @@ if (!$eventsResult) {
                                             <i class="fas fa-hand-paper"></i> Register Now
                                         </button>
                                     <?php else: ?>
-                                        <button class="btn btn-full" disabled>
-                                            <i class="fas fa-times-circle"></i> Event Full
+                                        <button class="btn btn-full" onclick="showFullModal()">
+                                            <i class="fas fa-times-circle"></i> No Slots Available
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -357,24 +364,24 @@ if (!$eventsResult) {
     </div>
 
     <!-- Modal Event Full -->
-    <div class="modal fade" id="fullModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="fas fa-times-circle"></i> Event Full</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center py-4">
-                    <i class="fas fa-users fa-3x text-danger mb-3"></i>
-                    <h5>No Slots Available</h5>
-                    <p class="text-muted">Registration for this event is now closed. See you in the upcoming ones!</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
+<div class="modal fade" id="fullModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-times-circle"></i> Event Full</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-users fa-3x text-danger mb-3"></i>
+                <h5>No Slots Available</h5>
+                <p class="text-muted">Registration for this event is now closed. See you in the upcoming ones!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
 
     <footer class="text-center py-4 mt-5" style="background-color: #333; color: white;">
         <div class="container">
@@ -395,11 +402,15 @@ if (!$eventsResult) {
             const modal = new bootstrap.Modal(document.getElementById('registerModal'));
             modal.show();
         }
+        function showFullModal() {
+            const modal = new bootstrap.Modal(document.getElementById('fullModal'));
+            modal.show();
+        }
 
         document.getElementById('confirmRegisterBtn').addEventListener('click', function() {
             // Check if logged in
             <?php if (!isset($_SESSION['uid'])): ?>
-                window.location.href = 'login.php?redirect=event_register&event_id=' + currentEventId;
+                window.location.href = 'login.php?redirect=register_event&event_id=' + currentEventId;
                 return;
             <?php endif; ?>
             if (userRole === 'admin' || userRole === 'teacher') {
@@ -414,7 +425,7 @@ if (!$eventsResult) {
                 return; // Dừng lại, không cho chạy tiếp
             }
             // Proceed to registration page
-            window.location.href = 'event_register.php?id=' + currentEventId;
+            window.location.href = 'register_event.php?id=' + currentEventId;
         });
 
         // Show success modal (when redirected back after successful registration)

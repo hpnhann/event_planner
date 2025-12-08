@@ -310,35 +310,43 @@ $draftCount = $totalEvents - $publishedCount;
                             </div>
                             <div class="col-md-8 mb-3">
                                 <label class="form-label">Title <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="title" id="title" 
+                                <input type="text" class="form-control" name="event_title" id="title" 
                                        maxlength="255" required placeholder="Beach Cleanup Drive">
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Description <span class="text-danger">*</span></label>
-                            <textarea class="form-control" name="description" id="description" 
+                            <textarea class="form-control" name="event_description" id="description" 
                                       rows="4" maxlength="5000" required 
                                       placeholder="Describe the event..."></textarea>
                             <small class="text-muted">Max 5000 characters</small>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Start Date <span class="text-danger">*</span></label>
-                                <input type="datetime-local" class="form-control" name="start_date" 
-                                       id="startDate" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">End Date <span class="text-danger">*</span></label>
-                                <input type="datetime-local" class="form-control" name="end_date" 
-                                       id="endDate" required>
-                            </div>
+                            
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Event Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="event_date" 
+                                id="eventDate" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Event Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" name="event_time" 
+                                id="eventTime" required>
+                        </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">End Date & Time <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" name="end_date" 
+                                id="endDate" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Location <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="location" id="location" 
+                            <input type="text" class="form-control" name="event_location" id="location" 
                                    maxlength="255" required placeholder="Sunset Beach">
                         </div>
 
@@ -363,13 +371,13 @@ $draftCount = $totalEvents - $publishedCount;
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Image</label>
-                                <input type="file" class="form-control" name="image" id="image" 
+                                <input type="file" class="form-control" name="event_image" id="image" 
                                        accept="image/*">
                                 <div id="currentImage" class="mt-2"></div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Close Registration At</label>
-                                <input type="datetime-local" class="form-control" name="close_registration" 
+                                <input type="datetime-local" class="form-control" name="registration_deadline" 
                                        id="closeRegistration">
                                 <small class="text-muted">Hệ thống tự động đóng đăng ký khi đến thời gian</small>
                             </div>
@@ -411,7 +419,7 @@ $draftCount = $totalEvents - $publishedCount;
         // Auto-generate activity code
         document.querySelector('[data-bs-target="#createEventModal"]').addEventListener('click', function() {
             if (document.getElementById('formAction').value === 'create') {
-                fetch('events_handler.php?action=get_next_code')
+                fetch('event_handler.php?action=get_next_code')
                     .then(response => response.json())
                     .then(data => {
                         if (data.code) {
@@ -427,7 +435,7 @@ $draftCount = $totalEvents - $publishedCount;
             
             const formData = new FormData(this);
             
-            fetch('events_handler.php', {
+            fetch('event_handler.php', {
                 method: 'POST',
                 body: formData
             })
@@ -446,30 +454,86 @@ $draftCount = $totalEvents - $publishedCount;
             });
         });
 
-        function editEvent(eventData) {
-            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Event';
-            document.getElementById('submitBtnText').textContent = 'Update Event';
-            document.getElementById('formAction').value = 'edit';
-            document.getElementById('eventId').value = eventData.id;
-            document.getElementById('activityCode').value = eventData.activity_code || '';
-            document.getElementById('title').value = eventData.event_title;
-            document.getElementById('description').value = eventData.event_description;
-            document.getElementById('startDate').value = eventData.event_date + 'T' + eventData.event_time;
-            document.getElementById('endDate').value = eventData.event_end_date || '';
-            document.getElementById('location').value = eventData.event_location;
-            document.getElementById('maxVolunteers').value = eventData.max_volunteers;
-            document.getElementById('cost').value = eventData.cost || '';
-            document.getElementById('benefits').value = eventData.benefits || '';
-            document.getElementById('closeRegistration').value = eventData.close_registration || '';
-            document.getElementById('status').value = eventData.status;
+        // function editEvent(eventData) {
+        //     document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Event';
+        //     document.getElementById('submitBtnText').textContent = 'Update Event';
+        //     document.getElementById('formAction').value = 'edit';
+        //     document.getElementById('eventId').value = eventData.id;
+        //     document.getElementById('activityCode').value = eventData.activity_code || '';
+        //     document.getElementById('title').value = eventData.event_title;
+        //     document.getElementById('description').value = eventData.event_description;
+        //     document.getElementById('startDate').value = eventData.event_date + 'T' + eventData.event_time;
+        //     document.getElementById('endDate').value = eventData.event_end_date || '';
+        //     document.getElementById('location').value = eventData.event_location;
+        //     document.getElementById('maxVolunteers').value = eventData.max_volunteers;
+        //     document.getElementById('cost').value = eventData.cost || '';
+        //     document.getElementById('benefits').value = eventData.benefits || '';
+        //     document.getElementById('closeRegistration').value = eventData.registration_deadline || '';
+        //     document.getElementById('status').value = eventData.status;
             
-            if (eventData.event_image) {
-                document.getElementById('currentImage').innerHTML = 
-                    '<img src="../uploads/events/' + eventData.event_image + '" style="max-width: 200px;" class="img-thumbnail">';
+        //     if (eventData.event_image) {
+        //         document.getElementById('currentImage').innerHTML = 
+        //             '<img src="../uploads/events/' + eventData.event_image + '" style="max-width: 200px;" class="img-thumbnail">';
+        //     }
+            
+        //     new bootstrap.Modal(document.getElementById('createEventModal')).show();
+        // }
+        function editEvent(eventData) {
+            // 1. Cập nhật tiêu đề và nút bấm
+            const modalTitle = document.getElementById('modalTitle');
+            if(modalTitle) modalTitle.innerHTML = '<i class="fas fa-edit"></i> Edit Event';
+            
+            const submitBtn = document.getElementById('submitBtnText');
+            if(submitBtn) submitBtn.textContent = 'Update Event';
+            
+            const formAction = document.getElementById('formAction');
+            if(formAction) formAction.value = 'edit';
+            
+            const eventIdInput = document.getElementById('eventId');
+            if(eventIdInput) eventIdInput.value = eventData.id;
+
+            // 2. Hàm helper để gán giá trị an toàn (tránh lỗi null)
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val || '';
+            };
+
+            // 3. Gán dữ liệu (Dùng hàm helper để không bị lỗi nếu thiếu input)
+            setVal('activityCode', eventData.activity_code);
+            setVal('title', eventData.event_title);
+            setVal('description', eventData.event_description);
+            
+            // Xử lý ngày giờ
+            if(document.getElementById('startDate')) {
+                // Tách ngày và giờ từ event_date và event_time nếu input tách riêng
+                document.getElementById('startDate').value = eventData.event_date + 'T' + eventData.event_time; 
+            }
+            // Hoặc nếu dùng input date và time riêng biệt như trong code mới của bạn:
+            setVal('eventDate', eventData.event_date);
+            setVal('eventTime', eventData.event_time);
+
+            setVal('endDate', eventData.end_date); // Lưu ý tên biến DB trả về
+            setVal('location', eventData.event_location);
+            setVal('maxVolunteers', eventData.max_volunteers);
+            setVal('cost', eventData.cost);
+            setVal('benefits', eventData.benefits);
+            setVal('closeRegistration', eventData.registration_deadline);
+            setVal('status', eventData.status);
+            
+            // 4. Hiển thị ảnh cũ
+            const imgDiv = document.getElementById('currentImage');
+            if (imgDiv) {
+                if (eventData.event_image) {
+                    imgDiv.innerHTML = '<img src="../uploads/events/' + eventData.event_image + '" style="max-width: 200px;" class="img-thumbnail">';
+                } else {
+                    imgDiv.innerHTML = '';
+                }
             }
             
+            // 5. Mở Modal
             new bootstrap.Modal(document.getElementById('createEventModal')).show();
         }
+
 
         function deleteEvent(id, title) {
             if (confirm('⚠️ Are you sure you want to delete event: ' + title + '?')) {
@@ -477,7 +541,7 @@ $draftCount = $totalEvents - $publishedCount;
                 formData.append('action', 'delete');
                 formData.append('event_id', id);
 
-                fetch('events_handler.php', {
+                fetch('event_handler.php', {
                     method: 'POST',
                     body: formData
                 })
