@@ -333,7 +333,7 @@ if (!$eventsResult) {
                 </div>
                 <div class="modal-body text-center py-4">
                     <i class="fas fa-user-shield fa-4x text-warning mb-3"></i>
-                    <h5>Không thể đăng ký khi đang là admin/teacher</h5>
+                    <h5>Không thể đăng ký khi đang là Admin</h5>
                     <p class="text-muted">Vui lòng đăng nhập bằng tài khoản Student hoặc Member.</p>
                 </div>
                 <div class="modal-footer">

@@ -2,7 +2,6 @@
 error_reporting(0);
 session_start();
 
-
 // CHECK IF USER IS LOGGED IN
 if (!isset($_SESSION['uid'])) {
     $event_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -269,13 +268,20 @@ mysqli_stmt_close($stmtCheck);
         </div>
     </div>
 
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
             formData.append('action', 'register');
+
+            // Debug: Log what we're sending
+            console.log('=== SENDING DATA ===');
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+            console.log('=== END SENDING DATA ===');
 
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
@@ -288,101 +294,54 @@ mysqli_stmt_close($stmtCheck);
             })
             .then(response => response.text())
             .then(text => {
-                console.log('Server trả về:', text);
+                console.log('=== RAW RESPONSE START ===');
+                console.log('Length:', text.length);
+                console.log('Content:', text);
+                console.log('First 100 chars:', text.substring(0, 100));
+                console.log('=== RAW RESPONSE END ===');
+                
+                if (text.trim() === '') {
+                    alert('ERROR: Server returned empty response!\n\nPossible causes:\n- PHP file not found\n- PHP syntax error\n- File permissions issue');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    return;
+                }
                 
                 try {
                     const data = JSON.parse(text);
-                    
-                    if (data.status === 'success') {
-                        alert('✅ ' + data.message + '\n\nThank you for registering!');
-                        window.location.href = 'public_events.php';
-                    } else {
-                        alert('❌ Lỗi: ' + data.message);
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalText;
-                    }
+                    return data;
                 } catch (e) {
-                    console.error('Lỗi parse JSON:', e);
-                    console.error('Response:', text);
-                    alert('❌ Server trả về dữ liệu lỗi!');
+                    alert('Server Error: Response is not valid JSON!\n\nResponse: ' + text.substring(0, 200) + '\n\nCheck console for full response.');
+                    console.error('JSON Parse Error:', e);
+                    console.error('Full response text:', text);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    throw e;
+                }
+            })
+            .then(data => {
+                if (!data) return; // Skip if empty response
+                if (data.status === 'success') {
+                    // Show success message
+                    alert('✅ ' + data.message + '\n\nThank you for registering!');
+                    
+                    // Redirect to public events after 1 second
+                    setTimeout(() => {
+                        window.location.href = 'public_events.php';
+                    }, 1000);
+                } else {
+                    alert('❌ Error: ' + data.message);
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;
                 }
             })
             .catch(error => {
-                console.error('Fetch error:', error);
-                alert('❌ Không thể kết nối tới server!');
+                console.error('Error:', error);
+                alert('❌ An error occurred while submitting your registration!');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             });
         });
-    </script> -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    (function() {
-        'use strict';
-        
-        const form = document.getElementById('registrationForm');
-        if (!form) return;
-        
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            e.stopPropagation(); // Ngăn event bubble up
-            
-            const formData = new FormData(this);
-            formData.append('action', 'register');
-            
-            console.log('Form data being sent:');
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-            }
-
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-
-            fetch('register_handler.php', {
-                method: 'POST',
-                body: formData,
-                credentials: 'same-origin'
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.text();
-            })
-            .then(text => {
-                console.log('Server response:', text);
-                
-                try {
-                    const data = JSON.parse(text);
-                    
-                    if (data.status === 'success') {
-                        alert('✅ ' + data.message);
-                        window.location.href = 'public_events.php';
-                    } else {
-                        alert('❌ Lỗi: ' + data.message);
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalText;
-                    }
-                } catch (e) {
-                    console.error('JSON parse error:', e);
-                    console.error('Raw response:', text);
-                    alert('❌ Lỗi: Server trả về dữ liệu không hợp lệ!');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                alert('❌ Không thể kết nối server!');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            });
-            
-            return false;
-        }, false);
-    })();
     </script>
 </body>
 </html>

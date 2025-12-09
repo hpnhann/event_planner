@@ -29,7 +29,7 @@ try {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         sendResponse('error', 'Email không hợp lệ!');
     }
-
+    
     if (strlen($password) < 6) { // Tùy chỉnh độ dài
         sendResponse('error', 'Mật khẩu phải từ 6 ký tự trở lên!');
     }

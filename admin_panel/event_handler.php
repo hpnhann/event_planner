@@ -38,7 +38,23 @@ if (!$row || $row['role'] !== 'admin') {
     sendJson(['status' => 'error', 'message' => 'Unauthorized']);
 }
 
-$action = isset($_POST['action']) ? $_POST['action'] : '';
+$action = isset($_GET['action']) ? $_GET['action'] : (isset($_POST['action']) ? $_POST['action'] : '');
+
+// GET NEXT ACTIVITY CODE
+if ($action === 'get_next_code') {
+    $query = "SELECT activity_code FROM events ORDER BY activity_code DESC LIMIT 1";
+    $result = mysqli_query($conn, $query);
+    
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $lastCode = intval($row['activity_code']);
+        $nextCode = str_pad($lastCode + 1, 6, '0', STR_PAD_LEFT);
+    } else {
+        $nextCode = '000001';
+    }
+    
+    sendJson(['status' => 'success', 'code' => $nextCode]);
+}
 
 // CREATE EVENT
 if ($action === 'create') {
@@ -109,7 +125,7 @@ if ($action === 'create') {
     }
 }
 
-// EDIT EVENT
+    // EDIT EVENT
 elseif ($action === 'edit') {
     $event_id = intval($_POST['event_id'] ?? 0);
     if ($event_id < 1) sendJson(['status' => 'error', 'message' => 'Invalid ID']);
@@ -130,9 +146,9 @@ elseif ($action === 'edit') {
     if (empty($event_title)) sendJson(['status' => 'error', 'message' => 'Title required']);
     if ($max_volunteers < 1) sendJson(['status' => 'error', 'message' => 'Max volunteers must be >= 1']);
 
-    $checkSql = "SELECT event_image FROM events WHERE id=? AND created_by=?";
+    $checkSql = "SELECT event_image FROM events WHERE id=?";
     $checkStmt = mysqli_prepare($conn, $checkSql);
-    mysqli_stmt_bind_param($checkStmt, "is", $event_id, $uid);
+    mysqli_stmt_bind_param($checkStmt, "i", $event_id);
     mysqli_stmt_execute($checkStmt);
     $checkResult = mysqli_stmt_get_result($checkStmt);
     
@@ -169,13 +185,13 @@ elseif ($action === 'edit') {
             activity_code=?, event_title=?, event_description=?, event_location=?, 
             event_date=?, event_time=?, end_date=?, max_volunteers=?, cost=?, 
             benefits=?, registration_deadline=?, event_image=?, status=?
-            WHERE id=? AND created_by=?";
+            WHERE id=?";
     
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "sssssssidssssis", 
+    mysqli_stmt_bind_param($stmt, "sssssssidssssi", 
         $activity_code, $event_title, $event_description, $event_location, 
         $event_date, $event_time, $end_date, $max_volunteers, $cost, 
-        $benefits, $registration_deadline, $event_image, $status, $event_id, $uid
+        $benefits, $registration_deadline, $event_image, $status, $event_id
     );
 
     if (mysqli_stmt_execute($stmt)) {
@@ -193,9 +209,9 @@ elseif ($action === 'edit') {
 elseif ($action === 'delete') {
     $event_id = intval($_POST['event_id'] ?? 0);
     
-    $query = "SELECT event_image FROM events WHERE id=? AND created_by=?";
+    $query = "SELECT event_image FROM events WHERE id=?";
     $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "is", $event_id, $uid);
+    mysqli_stmt_bind_param($stmt, "i", $event_id);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     
@@ -208,9 +224,9 @@ elseif ($action === 'delete') {
     $event_image = $row['event_image'];
     mysqli_stmt_close($stmt);
     
-    $delSql = "DELETE FROM events WHERE id=? AND created_by=?";
+    $delSql = "DELETE FROM events WHERE id=?";
     $delStmt = mysqli_prepare($conn, $delSql);
-    mysqli_stmt_bind_param($delStmt, "is", $event_id, $uid);
+    mysqli_stmt_bind_param($delStmt, "i", $event_id);
     
     if (mysqli_stmt_execute($delStmt)) {
         if ($event_image && file_exists('../uploads/events/' . $event_image)) {

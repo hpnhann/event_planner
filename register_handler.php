@@ -1,90 +1,144 @@
 <?php
-error_reporting(0);
-ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 header('Content-Type: application/json');
 
-if (file_exists('assets/config.php')) {
-    include('assets/config.php');
-} else {
-    echo json_encode(['status' => 'error', 'message' => 'Cannot find config.php']);
+if (!file_exists('assets/config.php')) {
+    echo json_encode(['status' => 'error', 'message' => 'Config not found']);
+    exit();
+}
+
+require_once('assets/config.php');
+
+if (!$conn) {
+    echo json_encode(['status' => 'error', 'message' => 'Database failed']);
     exit();
 }
 
 if (!isset($_SESSION['uid'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Please login to register!']);
+    echo json_encode(['status' => 'error', 'message' => 'Not logged in']);
     exit();
 }
 
-$user_id = $_SESSION['uid'];
-$action = isset($_POST['action']) ? $_POST['action'] : '';
-
-if ($action === 'register') {
-    $event_id = intval($_POST['event_id']);
-    $full_name = mysqli_real_escape_string($conn, trim($_POST['full_name']));
-    $phone = mysqli_real_escape_string($conn, trim($_POST['phone']));
-    $notes = isset($_POST['notes']) ? mysqli_real_escape_string($conn, trim($_POST['notes'])) : '';
-
-    $eventQuery = "SELECT e.*, COUNT(DISTINCT r.id) as registered_count 
-                   FROM events e 
-                   LEFT JOIN event_registrations r ON e.id = r.event_id AND r.status != 'cancelled'
-                   WHERE e.id = ? AND e.status = 'published'
-                   GROUP BY e.id";
-    
-    $stmt = mysqli_prepare($conn, $eventQuery);
-    mysqli_stmt_bind_param($stmt, "i", $event_id);
-    mysqli_stmt_execute($stmt);
-    $eventResult = mysqli_stmt_get_result($stmt);
-    
-    if (mysqli_num_rows($eventResult) == 0) {
-        echo json_encode(['status' => 'error', 'message' => 'Event does not exist!']);
-        exit();
-    }
-    
-    $event = mysqli_fetch_assoc($eventResult);
-    mysqli_stmt_close($stmt);
-    
-    if ($event['registered_count'] >= $event['max_volunteers']) {
-        echo json_encode(['status' => 'error', 'message' => 'Event is full!']);
-        exit();
-    }
-
-    $checkRegQuery = "SELECT id FROM event_registrations WHERE event_id = ? AND user_id = ? AND status != 'cancelled'";
-    $checkRegStmt = mysqli_prepare($conn, $checkRegQuery);
-    mysqli_stmt_bind_param($checkRegStmt, "is", $event_id, $user_id);
-    mysqli_stmt_execute($checkRegStmt);
-    
-    if (mysqli_num_rows(mysqli_stmt_get_result($checkRegStmt)) > 0) {
-        echo json_encode(['status' => 'error', 'message' => 'Already registered!']);
-        mysqli_stmt_close($checkRegStmt);
-        exit();
-    }
-    mysqli_stmt_close($checkRegStmt);
-
-    $registerQuery = "INSERT INTO event_registrations (event_id, user_id, status, notes) 
-                      VALUES (?, ?, 'pending', NOW(), ?)";
-                      
-    $registerStmt = mysqli_prepare($conn, $registerQuery);
-    mysqli_stmt_bind_param($registerStmt, "iss", $event_id, $user_id, $notes);
-    
-    if (mysqli_stmt_execute($registerStmt)) {
-        mysqli_stmt_close($registerStmt);
-        
-        if (!empty($phone) || !empty($full_name)) {
-            $updateUser = "UPDATE users SET phone = ?, full_name = ? WHERE id = ?";
-            $upStmt = mysqli_prepare($conn, $updateUser);
-            mysqli_stmt_bind_param($upStmt, "sss", $phone, $full_name, $user_id);
-            mysqli_stmt_execute($upStmt);
-            mysqli_stmt_close($upStmt);
-        }
-
-        echo json_encode(['status' => 'success', 'message' => 'Đăng ký thành công!']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Database error']);
-    }
-} else {
+if (!isset($_POST['action']) || $_POST['action'] !== 'register') {
     echo json_encode(['status' => 'error', 'message' => 'Invalid action']);
+    exit();
 }
 
-mysqli_close($conn);
+$user_email = $_SESSION['uid']; // Email
+$event_id = intval($_POST['event_id']);
+$full_name = mysqli_real_escape_string($conn, trim($_POST['full_name'] ?? ''));
+$phone = mysqli_real_escape_string($conn, trim($_POST['phone'] ?? ''));
+$notes = mysqli_real_escape_string($conn, trim($_POST['notes'] ?? ''));
+
+// ===== QUAN TRỌNG: Lấy USER INT ID từ email =====
+$userQuery = "SELECT id FROM users WHERE id = ?";
+$userStmt = mysqli_prepare($conn, $userQuery);
+mysqli_stmt_bind_param($userStmt, "s", $user_email);
+mysqli_stmt_execute($userStmt);
+$userResult = mysqli_stmt_get_result($userStmt);
+
+if (mysqli_num_rows($userResult) === 0) {
+    echo json_encode(['status' => 'error', 'message' => 'User not found']);
+    exit();
+}
+
+$userData = mysqli_fetch_assoc($userResult);
+mysqli_stmt_close($userStmt);
+
+// NẾU bảng users có cột int_id riêng, dùng nó
+// Nếu không, dùng email làm user_id (nhưng phải VARCHAR trong event_registrations)
+$user_id = $user_email; // Giữ nguyên email
+
+// Validate
+if (empty($full_name) || empty($phone)) {
+    echo json_encode(['status' => 'error', 'message' => 'Please fill all required fields']);
+    exit();
+}
+
+if ($event_id < 1) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid event ID']);
+    exit();
+}
+
+// Check event
+$sql = "SELECT id, event_title, max_volunteers, 
+        (SELECT COUNT(*) FROM event_registrations 
+         WHERE event_id = events.id AND status != 'cancelled') as registered_count
+        FROM events 
+        WHERE id = ? AND status = 'published'";
+
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, "i", $event_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+
+if (mysqli_num_rows($result) === 0) {
+    mysqli_stmt_close($stmt);
+    echo json_encode(['status' => 'error', 'message' => 'Event not found']);
+    exit();
+}
+
+$event = mysqli_fetch_assoc($result);
+mysqli_stmt_close($stmt);
+
+if ($event['registered_count'] >= $event['max_volunteers']) {
+    echo json_encode(['status' => 'error', 'message' => 'Event is full']);
+    exit();
+}
+
+// Check already registered
+$sql = "SELECT id FROM event_registrations 
+        WHERE event_id = ? AND user_id = ? AND status != 'cancelled'";
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, "is", $event_id, $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+
+if (mysqli_num_rows($result) > 0) {
+    mysqli_stmt_close($stmt);
+    echo json_encode(['status' => 'error', 'message' => 'Already registered']);
+    exit();
+}
+mysqli_stmt_close($stmt);
+
+// ===== XÓA UNIQUE CONSTRAINT TRƯỚC KHI INSERT =====
+// Chạy query này 1 LẦN trong phpMyAdmin:
+// ALTER TABLE event_registrations DROP INDEX unique_registration;
+
+// Insert
+$sql = "INSERT INTO event_registrations (event_id, user_id, status, notes) 
+        VALUES (?, ?, 'pending', ?)";
+$stmt = mysqli_prepare($conn, $sql);
+
+if (!$stmt) {
+    echo json_encode(['status' => 'error', 'message' => 'Prepare failed: ' . mysqli_error($conn)]);
+    exit();
+}
+
+mysqli_stmt_bind_param($stmt, "iss", $event_id, $user_id, $notes);
+
+if (mysqli_stmt_execute($stmt)) {
+    mysqli_stmt_close($stmt);
+    
+    $sql = "UPDATE users SET full_name = ?, phone = ? WHERE id = ?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "sss", $full_name, $phone, $user_id);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+    
+    mysqli_close($conn);
+    
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Đăng ký thành công cho ' . $event['event_title'] . '!'
+    ]);
+} else {
+    $error = mysqli_error($conn);
+    mysqli_stmt_close($stmt);
+    mysqli_close($conn);
+    
+    echo json_encode(['status' => 'error', 'message' => 'Failed: ' . $error]);
+}
 ?>

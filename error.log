@@ -1,0 +1,75 @@
+[09-Dec-2025 03:28:08 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Column count doesn't match value count at row 1 in D:\DoAn\htdocs\school-management-system\register_handler.php:78
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(78): mysqli_prepare(Object(mysqli), 'INSERT INTO eve...')
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 78
+[09-Dec-2025 03:28:13 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Column count doesn't match value count at row 1 in D:\DoAn\htdocs\school-management-system\register_handler.php:78
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(78): mysqli_prepare(Object(mysqli), 'INSERT INTO eve...')
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 78
+[09-Dec-2025 03:37:18 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in D:\DoAn\htdocs\school-management-system\register_handler.php:79
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(79): mysqli_stmt_bind_param(Object(mysqli_stmt), 'isss', 5, 'abcc@gmail.com', '')
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 79
+[09-Dec-2025 03:57:14 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-5' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 03:57:17 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-5' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 03:58:19 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-5' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 04:20:42 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-2' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 04:20:51 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-1' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 04:20:59 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-7' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 04:21:08 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-6' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 04:21:41 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-5' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 13:51:54 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-5' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 13:52:07 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-5' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 13:52:26 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-6' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81
+[09-Dec-2025 13:52:37 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '0-7' for key 'unique_registration' in D:\DoAn\htdocs\school-management-system\register_handler.php:81
+Stack trace:
+#0 D:\DoAn\htdocs\school-management-system\register_handler.php(81): mysqli_stmt_execute(Object(mysqli_stmt))
+#1 {main}
+  thrown in D:\DoAn\htdocs\school-management-system\register_handler.php on line 81

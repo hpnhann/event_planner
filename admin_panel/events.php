@@ -1,4 +1,4 @@
-<?php
+    <?php
 error_reporting(0);
 session_start();
 
@@ -305,7 +305,7 @@ $draftCount = $totalEvents - $publishedCount;
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Activity Code <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="activity_code" id="activityCode" 
-                                       placeholder="000001" required>
+                                       placeholder="000001" readonly required>
                                 <small class="text-muted">Format: 6 digits, auto increment</small>
                             </div>
                             <div class="col-md-8 mb-3">

@@ -124,3 +124,394 @@ POST: Array
 )
 
 Session UID: 29329384
+2025-12-09 03:28:04
+POST: Array
+(
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:28:08
+POST: Array
+(
+    [event_id] => 5
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:28:13
+POST: Array
+(
+    [event_id] => 5
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:37:18
+POST: Array
+(
+    [event_id] => 5
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:57:07
+POST: Array
+(
+    [event_id] => 5
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:57:14
+POST: Array
+(
+    [event_id] => 5
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:57:17
+POST: Array
+(
+    [event_id] => 5
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:57:33
+POST: Array
+(
+    [event_id] => 2
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:58:19
+POST: Array
+(
+    [event_id] => 5
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:58:28
+POST: Array
+(
+    [event_id] => 6
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:58:34
+POST: Array
+(
+    [event_id] => 7
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 03:59:16
+POST: Array
+(
+    [event_id] => 1
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 04:20:42
+POST: Array
+(
+    [event_id] => 2
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 04:20:51
+POST: Array
+(
+    [event_id] => 1
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 04:20:59
+POST: Array
+(
+    [event_id] => 7
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 04:21:08
+POST: Array
+(
+    [event_id] => 6
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 04:21:41
+POST: Array
+(
+    [event_id] => 5
+    [user_id] => 
+    [student_id] => 
+    [full_name] => Phuc Nhan
+    [email] => haha@gmail.com
+    [phone] => 0198938933
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => 
+)
+
+---
+2025-12-09 13:51:54
+POST: Array
+(
+    [event_id] => 5
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 13:52:07
+POST: Array
+(
+    [event_id] => 5
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 13:52:26
+POST: Array
+(
+    [event_id] => 6
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---
+2025-12-09 13:52:37
+POST: Array
+(
+    [event_id] => 7
+    [user_id] => abcc@gmail.com
+    [student_id] => abcc@gmail.com
+    [full_name] => Quan Le
+    [email] => abcc@gmail.com
+    [phone] => 0132459285
+    [notes] => 
+    [action] => register
+)
+
+SESSION: Array
+(
+    [uid] => abcc@gmail.com
+)
+
+---

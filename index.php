@@ -291,55 +291,60 @@ if ($isLoggedIn) {
             </div>
 
             <!-- CONTACT SECTION -->
-            <div id="contact" class="content-section">
-                <h2 class="section-heading">CONTACT</h2>
-                <p class="section-sub-heading">Liên Hệ Với Chúng Tôi</p>
-                
-                <div class="row contact-content">
-                    <div class="col col-half contact-info">
-                        <p><i class="ti-location-pin"></i> TP Hồ Chí Minh, Việt Nam</p>
-                        <p><i class="ti-mobile"></i> Phone: <a href="tel:+84123456789">+84 123 456 789</a></p>
-                        <p><i class="ti-email"></i> Email: <a href="mailto:ctxh@uit.edu.vn">ctxh@uit.edu.vn</a></p>
-                    </div>
-                    <div class="col col-half contact-form">
-                        <form action="">
-                            <div class="row">
-                                <div class="col col-half">
-                                    <input type="text" name="name" placeholder="Họ và tên" required class="form-control">
+            <div id="contact" class="content-section" style="background-color: #f9f9f9; padding: 64px 16px;">
+                <div style="max-width: 800px; margin: 0 auto;">
+                    <h2 class="section-heading" style="text-align: center; font-size: 30px; letter-spacing: 4px; margin-bottom: 25px;">CONTACT US</h2>
+                    <p class="section-sub-heading" style="text-align: center; font-style: italic; opacity: 0.6; margin-bottom: 48px;">Liên Hệ Với Chúng Tôi</p>
+                    
+                    <div class="row contact-content" style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                        <div class="col col-half contact-info" style="flex: 1; min-width: 300px; margin-bottom: 16px;">
+                            <p style="font-size: 18px; line-height: 1.6; margin-bottom: 15px;"><i class="ti-location-pin" style="width: 30px; display: inline-block;"></i> TP Hồ Chí Minh, Việt Nam</p>
+                            <p style="font-size: 18px; line-height: 1.6; margin-bottom: 15px;"><i class="ti-mobile" style="width: 30px; display: inline-block;"></i> Phone: <a href="tel:+84123456789" style="color: #009688; text-decoration: none;">+84 123 456 789</a></p>
+                            <p style="font-size: 18px; line-height: 1.6; margin-bottom: 15px;"><i class="ti-email" style="width: 30px; display: inline-block;"></i> Email: <a href="mailto:ctxh@uit.edu.vn" style="color: #009688; text-decoration: none;">ctxh@uit.edu.vn</a></p>
+                        </div>
+                        <div class="col col-half contact-form" style="flex: 1; min-width: 300px;">
+                            <form action="">
+                                <div class="row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <div class="col col-half" style="flex: 1;">
+                                        <input type="text" name="name" placeholder="Họ và tên" required class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px;">
+                                    </div>
+                                    <div class="col col-half" style="flex: 1;">
+                                        <input type="email" name="email" placeholder="Email" required class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px;">
+                                    </div>
                                 </div>
-                                <div class="col col-half">
-                                    <input type="email" name="email" placeholder="Email" required class="form-control">
+                                <div class="row" style="margin-bottom: 10px;">
+                                    <div class="col col-full">
+                                        <input type="text" name="message" placeholder="Lời nhắn" required class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px;">
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="row mt-8">
-                                <div class="col col-full">
-                                    <input type="text" name="message" placeholder="Lời nhắn" required class="form-control">
-                                </div>
-                            </div>
-                            <input class="contact-submit-btn mt-16" type="submit" value="GỬI">
-                        </form>
+                                <button type="submit" style="background-color: #000; color: #fff; padding: 12px 24px; border: none; font-size: 16px; cursor: pointer; float: right; transition: all 0.3s; border-radius: 4px;">
+                                    GỬI <i class="ti-check"></i>
+                                </button>
+                                <div style="clear: both;"></div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- MAP -->
-            <div class="map-section">
+            <!-- <div class="map-section">
                 <img src="./landing_page_assets/img/map.jpg" alt="Map" class="map-img">
-            </div>
+            </div> -->
         </div>
 
         <!-- FOOTER -->
-        <div id="footer">
-            <div class="socials-list">
-                <a href="#"><i class="ti-facebook"></i></a>
-                <a href="#"><i class="ti-instagram"></i></a>
-                <a href="#"><i class="ti-youtube"></i></a>
-                <a href="#"><i class="ti-pinterest"></i></a>
-                <a href="#"><i class="ti-twitter"></i></a>
-                <a href="#"><i class="ti-linkedin"></i></a>
+        <div id="footer" style="padding: 64px 16px; text-align: center; background-color: #f1f1f1;">
+            <div class="socials-list" style="margin-bottom: 20px;">
+                <a href="#" style="font-size: 24px; color: #666; text-decoration: none; margin: 0 8px;"><i class="ti-facebook"></i></a>
+                <a href="#" style="font-size: 24px; color: #666; text-decoration: none; margin: 0 8px;"><i class="ti-instagram"></i></a>
+                <a href="#" style="font-size: 24px; color: #666; text-decoration: none; margin: 0 8px;"><i class="ti-youtube"></i></a>
+                <a href="#" style="font-size: 24px; color: #666; text-decoration: none; margin: 0 8px;"><i class="ti-pinterest"></i></a>
+                <a href="#" style="font-size: 24px; color: #666; text-decoration: none; margin: 0 8px;"><i class="ti-twitter"></i></a>
+                <a href="#" style="font-size: 24px; color: #666; text-decoration: none; margin: 0 8px;"><i class="ti-linkedin"></i></a>
             </div>
-            <p class="copyright">
-                Powered by <a href="#">Đội Công Tác Xã Hội UIT</a>
+            <p class="copyright" style="margin-top: 15px; color: #666; font-size: 15px;">
+                Powered by <a href="#" style="color: #666;">Đội Công Tác Xã Hội UIT</a>
             </p>
         </div>
     </div>
