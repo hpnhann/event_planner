@@ -303,9 +303,11 @@ http://localhost/school-management-system/
 
 | Role | Email | Password | Access Level |
 |------|-------|----------|--------------|
-| **Admin** | admin@school.com | password | Full system access |
-| **Teacher** | teacher@school.com | password | Event management |
-| **Student** | student@school.com | password | Event registration |
+| **Admin** | admin@gmail.com | 123 | Full system access |
+| **Volunteer** | abcc@gmail.com | 12345677 | Event registration |
+| **Volunteer** | chua@gmail.com | 123 | Event registration |
+| **Volunteer** | haha@gmail.com | 123 | Event registration |
+
 
 ⚠️ **Important:** Change default passwords after first login!
 
