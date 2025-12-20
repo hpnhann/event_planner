@@ -5,8 +5,6 @@
 <input type="hidden" value="1" id="checkFileName">
 <!-- End of Sidebar -->
 
-
-
 <div class="modal fade" id="reminder-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -16,17 +14,14 @@
                         class='bx bx-x'></i></button>
             </div>
             <div class="modal-body">
-
                 <div class="container mr-3 ml-3">
                     <div class="alert alert-warning reminder-error" role="alert" style="min-height: 50px;display: none;">
                     Message can't be empty!
                     </div>
                     <div class="mb-3">
-                        <!-- <label for="exampleFormControlTextarea1" class="form-label">Example textarea</label> -->
                         <textarea class="form-control" id="reminder-msg" rows="3"></textarea>
                     </div>
                 </div>
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary text-center _flex-container" onclick="addReminder()"> <i
@@ -35,7 +30,6 @@
         </div>
     </div>
 </div>
-
 
 <!-- Main Content -->
 <div class="content">
@@ -48,46 +42,45 @@
             <div class="left">
                 <h1>Dashboard</h1>
                 <ul class="breadcrumb">
-                    <li><a>
-                            Analytics
-                        </a></li>
-
+                    <li><a>Analytics</a></li>
                 </ul>
             </div>
-            <!-- <a href="#" class="report">
-                <i class='bx bxs-file-pdf'></i>
-                <span>Worksheet PDF</span>
-            </a> -->
         </div>
 
         <!-- Insights -->
         <ul class="insights">
             <li onclick="showTeacherList()">
-                <!-- <i class='bx bx-calendar-check'></i> -->
                 <i class='bx bxs-user'></i>
                 <span class="info">
                     <h3 class="text-center" id="teacherCount">_ _ _</h3>
                     <p>Teachers</p>
                 </span>
             </li>
+            <li onclick="window.location.href='manage_registrations.php'">
+                <i class='bx bx-calendar-check'></i>
+                <span class="info">
+                    <h3 class="text-center" id="pendingRegistrationsCount">0</h3>
+                    <p>Pending Registrations</p>
+                </span>
+            </li>
             <li onclick="showStudentList()">
                 <i class='bx bxs-group'></i>
                 <span class="info">
-                    <h3  class="text-center" id="studentCount">_ _ _</h3>
+                    <h3 class="text-center" id="studentCount">_ _ _</h3>
                     <p>Students</p>
                 </span>
             </li>
             <li onclick="showNotesList()">
                 <i class='bx bx-book'></i>
                 <span class="info">
-                    <h3 class="text-center"  id="classCount">_ _ _</h3>
+                    <h3 class="text-center" id="classCount">_ _ _</h3>
                     <p>Notes</p>
                 </span>
             </li>
             <li onclick="showNoticeList()">
                 <i class='bx bxs-bookmark'></i>
                 <span class="info">
-                    <h3 class="text-center"  id="noticeCount">_ _ _</h3>
+                    <h3 class="text-center" id="noticeCount">_ _ _</h3>
                     <p>Notices</p>
                 </span>
             </li>
@@ -100,10 +93,8 @@
                     <i class='bx bx-receipt'></i>
                     <h3 id="text-heading">Latest Notices</h3>
                     <i class='bx bx-filter'></i>
-                    <a href="noticeboard.php" > <i class='bx bx-plus icon-hover-circle' id="plusIconNotification" style="font-size: 30px;"></i></a>
+                    <a href="noticeboard.php"><i class='bx bx-plus icon-hover-circle' id="plusIconNotification" style="font-size: 30px;"></i></a>
                 </div>
-
-
 
                 <table>
                     <thead>
@@ -114,7 +105,6 @@
                         </tr>
                     </thead>
                     <tbody id="noticeTableBody">
-                   
                     </tbody>
                 </table>
             </div>
@@ -124,22 +114,28 @@
                 <div class="header">
                     <i class='bx bx-note'></i>
                     <h3>Remiders</h3>
-                    <!-- <i class='bx bx-filter'></i> -->
-                    <a data-bs-toggle="modal" data-bs-target="#reminder-modal"> <i style="font-size: 30px;" class='bx bx-plus icon-hover-circle'></i></a>
+                    <a data-bs-toggle="modal" data-bs-target="#reminder-modal"><i style="font-size: 30px;" class='bx bx-plus icon-hover-circle'></i></a>
                 </div>
                 <ul class="task-list" id="all-reminders">
-                    
                 </ul>
             </div>
-           
-
-            <!-- End of Reminders-->
-
-            
         </div>
- <br>
+        <br>
     </main>
 </div>
 
 <script src="../assets/js/dashboard.js"></script>
-<?php include("partials/_footer.php");
+
+<script>
+// Load pending registrations count
+fetch('fetch_registrations.php?status=pending')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('pendingRegistrationsCount').textContent = data.counts.pending;
+        }
+    })
+    .catch(error => console.error('Error loading pending count:', error));
+</script>
+
+<?php include("partials/_footer.php"); ?>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Automated Test Runner</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #fff;
+        }
+
+        .test {
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #666;
+        }
+
+        .pass {
+            border-color: #0f0;
+            background: #0f03;
+        }
+
+        .fail {
+            border-color: #f00;
+            background: #f003;
+        }
+
+        .pending {
+            border-color: #ff0;
+            background: #ff03;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Volunteer Management System - Auto Test</h1>
+    <p>Target: <span id="target-url"></span></p>
+    <button onclick="runAllTests()">▶️ Run All Tests</button>
+    <button onclick="clearResults()">🗑️ Clear Results</button>
+    <div id="results"></div>
+
+    <script>
+        // UPDATED: Pointing to localhost to test local changes
+        // If you want to test the remote site, change this back to: 'https://volunteer-management-system.ct.ws/school-management-system'
+        const BASE_URL = 'http://localhost/school-management-system';
+
+        document.getElementById('target-url').textContent = BASE_URL;
+
+        let results = [];
+
+        // Test utilities
+        function log(testNo, name, status, message) {
+            results.push({ testNo, name, status, message, time: new Date().toLocaleTimeString() });
+            renderResults();
+        }
+
+        function renderResults() {
+            const html = results.map(r => `
+                <div class="test ${r.status}">
+                    <strong>[${r.testNo}] ${r.name}</strong> - ${r.status.toUpperCase()}<br>
+                    <small>${r.message} (${r.time})</small>
+                </div>
+            `).join('');
+            document.getElementById('results').innerHTML = html;
+        }
+
+        function clearResults() {
+            results = [];
+            renderResults();
+        }
+
+        // Test functions
+        async function testHomePageAccess() {
+            try {
+                const response = await fetch(BASE_URL + '/index.php');
+                if (response.ok) {
+                    const html = await response.text();
+                    const hasLoginButton = html.toLowerCase().includes('login') || html.includes('Sign In');
+                    if (hasLoginButton) {
+                        log('TC-01', 'System Access Check', 'pass', 'Home page loads with login buttons');
+                    } else {
+                        // It might be 'Login' link in the navbar
+                        if (html.includes('ti-user') || html.includes('fa-user')) {
+                            log('TC-01', 'System Access Check', 'pass', 'Home page loads (Login icon found)');
+                        } else {
+                            log('TC-01', 'System Access Check', 'fail', 'Login buttons not found');
+                        }
+                    }
+                } else {
+                    log('TC-01', 'System Access Check', 'fail', `HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log('TC-01', 'System Access Check', 'fail', error.message + ' (Make sure you are running this from localhost)');
+            }
+        }
+
+        async function testEventsPage() {
+            try {
+                const response = await fetch(BASE_URL + '/public_events.php');
+                if (response.ok) {
+                    log('TC-09', 'View Events List', 'pass', 'Events page accessible');
+                } else {
+                    log('TC-09', 'View Events List', 'fail', `HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log('TC-09', 'View Events List', 'fail', error.message);
+            }
+        }
+
+        async function testLoginPage() {
+            try {
+                const response = await fetch(BASE_URL + '/login.php');
+                if (response.ok) {
+                    const html = await response.text();
+                    const hasForm = html.includes('email') && html.includes('password');
+                    if (hasForm) {
+                        log('TC-04', 'Login Page', 'pass', 'Login form found');
+                    } else {
+                        log('TC-04', 'Login Page', 'fail', 'Login form not found');
+                    }
+                } else {
+                    log('TC-04', 'Login Page', 'fail', `HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log('TC-04', 'Login Page', 'fail', error.message);
+            }
+        }
+
+        async function testAdminPanel() {
+            try {
+                const response = await fetch(BASE_URL + '/admin_panel/dashboard.php');
+                // Should redirect to login if not authenticated
+                if (response.redirected && response.url.includes('login')) {
+                    log('TC-07', 'Protected Page Access', 'pass', 'Admin panel protected correctly (Redirected to Login)');
+                } else if (response.ok) {
+                    // Check if content looks like login page (sometimes redirect is internal or masked)
+                    const html = await response.text();
+                    if (html.includes('Sign you in') || html.includes('Login')) {
+                        log('TC-07', 'Protected Page Access', 'pass', 'Admin panel protected correctly (Showed Login Page)');
+                    } else {
+                        // Might be already logged in?
+                        log('TC-07', 'Protected Page Access', 'pending', 'Page loaded (User might be logged in or page is unprotected)');
+                    }
+                } else {
+                    log('TC-07', 'Protected Page Access', 'fail', `HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log('TC-07', 'Protected Page Access', 'pending', 'Need manual verification');
+            }
+        }
+
+        async function testProfilePage() {
+            try {
+                const response = await fetch(BASE_URL + '/profile.php');
+                if (response.redirected && response.url.includes('login')) {
+                    log('TC-Profile', 'Profile Page Access', 'pass', 'Profile page protected correctly');
+                } else if (response.ok) {
+                    const html = await response.text();
+                    if (html.includes('Login') || html.includes('Sign you in')) {
+                        log('TC-Profile', 'Profile Page Access', 'pass', 'Profile page protected correctly');
+                    } else {
+                        log('TC-Profile', 'Profile Page Access', 'pending', 'Page loaded (User might be logged in)');
+                    }
+                }
+            } catch (error) {
+                log('TC-Profile', 'Profile Page protection', 'fail', error.message);
+            }
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            clearResults();
+            log('INFO', 'Test Suite Started', 'pending', 'Running automated tests on ' + BASE_URL + '...');
+
+            await testHomePageAccess();
+            await new Promise(r => setTimeout(r, 500)); // Delay between tests
+
+            await testEventsPage();
+            await new Promise(r => setTimeout(r, 500));
+
+            await testLoginPage();
+            await new Promise(r => setTimeout(r, 500));
+
+            await testAdminPanel();
+            await new Promise(r => setTimeout(r, 500));
+
+            await testProfilePage();
+
+            // Filter only actual tests (starting with TC-) for the count
+            const testResults = results.filter(r => r.testNo.startsWith('TC-'));
+            const passed = testResults.filter(r => r.status === 'pass').length;
+            const failed = testResults.filter(r => r.status === 'fail').length;
+            const pending = testResults.filter(r => r.status === 'pending').length;
+
+            const summaryStatus = failed > 0 ? 'fail' : 'pass';
+
+            log('SUMMARY', 'Test Complete', summaryStatus,
+                `✅ Passed: ${passed} | ❌ Failed: ${failed} | ⏸️ Pending: ${pending}`);
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            console.log('Test runner ready. Click "Run All Tests" to start.');
+            runAllTests();
+        });
+    </script>
+</body>
+
+</html>

@@ -51,3 +51,9 @@
         </div>
     </div>
 </div>
+<li>
+    <a href="manage_registrations.php">
+        <i class='bx bx-calendar-check'></i>
+        <span class="text">Event Registrations</span>
+    </a>
+</li>

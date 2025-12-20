@@ -124,6 +124,247 @@ $is_full = $spots_left <= 0;
             padding: 0.5rem 1rem;
         }
     </style>
+<!-- Shared Navigation Bar - Add this to all pages -->
+<style>
+    /* Reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    /* Navigation Styles */
+    .main-nav {
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .nav-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 70px;
+    }
+
+    .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 3rem;
+    }
+
+    .nav-menu {
+        display: flex;
+        list-style: none;
+        gap: 2.5rem;
+        align-items: center;
+    }
+
+    .nav-menu a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 600;
+        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+        transition: color 0.3s;
+        position: relative;
+    }
+
+    .nav-menu a::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #667eea;
+        transition: width 0.3s;
+    }
+
+    .nav-menu a:hover,
+    .nav-menu a.active {
+        color: #667eea;
+    }
+
+    .nav-menu a:hover::after,
+    .nav-menu a.active::after {
+        width: 100%;
+    }
+
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .user-info:hover {
+        background: #e9ecef;
+    }
+
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+
+    .user-email {
+        font-weight: 500;
+        color: #333;
+        font-size: 0.9rem;
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.6rem 1.5rem;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: transform 0.3s, box-shadow 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .dropdown {
+        position: relative;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 0.5rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        min-width: 200px;
+        display: none;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s;
+    }
+
+    .dropdown:hover .dropdown-menu {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .dropdown-item {
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #333;
+        text-decoration: none;
+        transition: background 0.3s;
+    }
+
+    .dropdown-item:first-child {
+        border-radius: 10px 10px 0 0;
+    }
+
+    .dropdown-item:last-child {
+        border-radius: 0 0 10px 10px;
+    }
+
+    .dropdown-item:hover {
+        background: #f8f9fa;
+    }
+
+    .dropdown-item i {
+        width: 20px;
+        color: #667eea;
+    }
+
+    @media (max-width: 768px) {
+        .nav-menu {
+            display: none;
+        }
+        
+        .user-email {
+            display: none;
+        }
+    }
+</style>
+
+<nav class="main-nav">
+    <div class="nav-container">
+        <div class="nav-left">
+            <ul class="nav-menu">
+                <li><a href="index.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>">HOME</a></li>
+                <li><a href="about.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'about.php' ? 'active' : ''; ?>">ABOUT</a></li>
+                <li><a href="public_events.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'public_events.php' ? 'active' : ''; ?>">EVENTS</a></li>
+                <li><a href="contact.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'contact.php' ? 'active' : ''; ?>">CONTACT</a></li>
+                <?php if (isset($_SESSION['uid'])): ?>
+                    <li><a href="my_activity.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'my_activity.php' ? 'active' : ''; ?>">MY ACTIVITY</a></li>
+                <?php endif; ?>
+            </ul>
+        </div>
+        
+        <div class="nav-right">
+            <?php if (isset($_SESSION['uid'])): ?>
+                <div class="dropdown">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <?php echo strtoupper(substr($_SESSION['uid'], 0, 1)); ?>
+                        </div>
+                        <span class="user-email"><?php echo htmlspecialchars($_SESSION['uid']); ?></span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.8rem; color: #666;"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="my_activity.php" class="dropdown-item">
+                            <i class="fas fa-history"></i>
+                            <span>My Activity</span>
+                        </a>
+                        <a href="profile.php" class="dropdown-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="logout.php" class="dropdown-item">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            <?php else: ?>
+                <a href="login.php" class="btn-login">
+                    <i class="fas fa-user"></i>
+                    Login
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
+</nav>
 </head>
 <body>
     <!-- Header -->
@@ -136,11 +377,11 @@ $is_full = $spots_left <= 0;
                         <i class="fas fa-user"></i> Organized by: <?php echo htmlspecialchars($event['organizer_name'] ?? 'Unknown'); ?>
                     </p>
                 </div>
-                <div>
+                <!-- <div>
                     <a href="index.php" class="btn btn-light">
                         <i class="fas fa-arrow-left"></i> Back to Events
                     </a>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

@@ -204,6 +204,87 @@ $teachersResult = mysqli_query($conn, $teachersQuery);
         </div>
     </div>
 
+    <!-- Add Organiser Modal -->
+    <div class="modal fade" id="addOrganiserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Organiser</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addOrganiserForm">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" name="full_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-control" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" required minlength="6">
+                        </div>
+                        <div class="alert alert-danger d-none" id="addError"></div>
+                        <div class="alert alert-success d-none" id="addSuccess"></div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" id="saveOrganiserBtn">Save Organiser</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.getElementById('addOrganiserForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        let formData = new FormData(this);
+        let btn = document.getElementById('saveOrganiserBtn');
+        let errorAlert = document.getElementById('addError');
+        let successAlert = document.getElementById('addSuccess');
+        
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+        errorAlert.classList.add('d-none');
+        successAlert.classList.add('d-none');
+
+        fetch('create_organiser.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                successAlert.textContent = data.message;
+                successAlert.classList.remove('d-none');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                errorAlert.textContent = data.message;
+                errorAlert.classList.remove('d-none');
+                btn.disabled = false;
+                btn.textContent = 'Save Organiser';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            errorAlert.textContent = 'An error occurred. Please try again.';
+            errorAlert.classList.remove('d-none');
+            btn.disabled = false;
+            btn.textContent = 'Save Organiser';
+        });
+    });
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
